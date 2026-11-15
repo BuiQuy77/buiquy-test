@@ -392,47 +392,44 @@ export default function Part2ExerciseBank() {
   const scoreData = isExamSubmitted ? calculateScore() : null;
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-sky-700 to-indigo-800 text-white rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="relative z-10 max-w-3xl space-y-2">
-          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md text-sky-100 inline-flex items-center gap-1.5 border border-white/20">
+    <div className="space-y-5">
+      {/* Unified Section Header inside Chapter I Block */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+        <div>
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-800 uppercase tracking-wider">
             <Award className="w-3.5 h-3.5" />
-            CHƯƠNG I: KHẢO SÁT HÀM SỐ • GDPT 2018
-          </span>
-          <h3 className="text-xl md:text-2xl font-bold tracking-tight">
-            Ngân Hàng Câu Hỏi Luyện Tập & Phòng Thi Thử Trực Tuyến
+            <span>Mục 5 • Ôn Tập Cuối Chương I (SGK Trang 42 – 44)</span>
+          </div>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-[-0.02em] mt-0.5">
+            Ngân Hàng Câu Hỏi Trắc Nghiệm, Đúng/Sai & Trả Lời Ngắn Chương I
           </h3>
-          <p className="text-sky-100 text-xs md:text-sm leading-relaxed">
-            Hệ thống hóa toàn bộ các câu hỏi trắc nghiệm SGK Toán 12 Tập 1 (Trang 42 - 43) và bài thi chuẩn cấu trúc định dạng đề thi Tốt nghiệp THPT mới nhất của Bộ GD&ĐT.
-          </p>
         </div>
-      </div>
 
-      {/* Switcher: Luyện tập vs Luyện thi TN THPT */}
-      <div className="flex bg-sky-100/70 p-1.5 rounded-2xl border border-sky-200/80 gap-2 max-w-md">
-        <button
-          onClick={() => setActiveSubTab('practice')}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeSubTab === 'practice'
-              ? 'bg-white text-blue-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          1. Luyện Tập SGK
-        </button>
-        <button
-          onClick={() => setActiveSubTab('exam')}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeSubTab === 'exam'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          2. Luyện Thi TN THPT
-        </button>
+        {/* Switcher: Luyện tập vs Luyện thi TN THPT */}
+        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 shrink-0">
+          <button
+            onClick={() => setActiveSubTab('practice')}
+            className={`py-1.5 px-3.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeSubTab === 'practice'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            1. Bài Tập SGK (Tr.42–44)
+          </button>
+          <button
+            onClick={() => setActiveSubTab('exam')}
+            className={`py-1.5 px-3.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeSubTab === 'exam'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            2. Đề Thi Chuẩn 2025
+          </button>
+        </div>
       </div>
 
       {/* ========================================================

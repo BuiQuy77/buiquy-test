@@ -1,0 +1,1022 @@
+[
+  {
+    "id": 1,
+    "code": "ĐỀ SỐ 01",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 01",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 5,
+    "solutionPages": 12,
+    "examPdf": "/bo_de/de_1.pdf",
+    "solutionPdf": "/bo_de/giai_1.pdf",
+    "tags": [
+      "Khảo sát hàm số",
+      "Nguyên hàm - Tích phân",
+      "Hình Oxyz",
+      "Xác suất Bayes"
+    ],
+    "highlights": "Bài toán thực tế thể tích bể nước, tối ưu lợi nhuận đầu tư, tọa độ radar Oxyz & xác suất có điều kiện.",
+    "answers": {
+      "part1": [
+        "D",
+        "A",
+        "C",
+        "A",
+        "B",
+        "B",
+        "D",
+        "C",
+        "C",
+        "A",
+        "A",
+        "D"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        }
+      ],
+      "part3": [
+        "765",
+        "688",
+        "16",
+        "6",
+        "126",
+        "1808"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "code": "ĐỀ SỐ 02",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 02",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 10,
+    "examPdf": "/bo_de/de_2.pdf",
+    "solutionPdf": "/bo_de/giai_2.pdf",
+    "tags": [
+      "Đơn điệu & Cực trị",
+      "Tứ phân vị mẫu ghép nhóm",
+      "Vận tốc trung bình",
+      "Tối ưu thực tế"
+    ],
+    "highlights": "Thống kê chỉ số AQI Hà Nội, bài toán vận tốc tích phân, khoảng cách hình chóp & xác suất thực tế.",
+    "answers": {
+      "part1": [
+        "C",
+        "B",
+        "A",
+        "D",
+        "C",
+        "A",
+        "A",
+        "B",
+        "A",
+        "A",
+        "B",
+        "B"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": false
+        }
+      ],
+      "part3": [
+        "0,41",
+        "163",
+        "308",
+        "17,2",
+        "63,2",
+        "0,3"
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "code": "ĐỀ SỐ 03",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 03",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 9,
+    "examPdf": "/bo_de/de_3.pdf",
+    "solutionPdf": "/bo_de/giai_3.pdf",
+    "tags": [
+      "Tối ưu giá thuê phòng",
+      "Tích phân hàm ẩn",
+      "Xác suất toàn phần",
+      "Cực trị Oxyz"
+    ],
+    "highlights": "Bài toán bác An cho thuê 40 phòng trọ, xác suất môi trường ô nhiễm & bài toán khoảng cách Oxyz.",
+    "answers": {
+      "part1": [
+        "D",
+        "B",
+        "A",
+        "D",
+        "C",
+        "A",
+        "C",
+        "D",
+        "C",
+        "D",
+        "B",
+        "C"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": false
+        }
+      ],
+      "part3": [
+        "3,5",
+        "20",
+        "0,06",
+        "5",
+        "-5",
+        "1,15"
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "code": "ĐỀ SỐ 04",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 04",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 3,
+    "solutionPages": 10,
+    "examPdf": "/bo_de/de_4.pdf",
+    "solutionPdf": "/bo_de/giai_4.pdf",
+    "tags": [
+      "Thể tích khối tròn xoay",
+      "Tối ưu diện tích bể",
+      "Mặt phẳng nghiêng Oxyz",
+      "Công thức Bayes"
+    ],
+    "highlights": "Thiết kế bể chứa tối ưu diện tích đáy, độ dốc sân thoát nước Oxyz & xác suất đi học ngày mưa.",
+    "answers": {
+      "part1": [
+        "C",
+        "A",
+        "C",
+        "B",
+        "A",
+        "A",
+        "B",
+        "C",
+        "D",
+        "B",
+        "C",
+        "A"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": false
+        }
+      ],
+      "part3": [
+        "14,5",
+        "6,28",
+        "0,36",
+        "45",
+        "8,1",
+        "19"
+      ]
+    }
+  },
+  {
+    "id": 5,
+    "code": "ĐỀ SỐ 05",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 05",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 13,
+    "examPdf": "/bo_de/de_5.pdf",
+    "solutionPdf": "/bo_de/giai_5.pdf",
+    "tags": [
+      "Diện tích hoa văn Parabol",
+      "Xúc xắc xác suất",
+      "Đồng phẳng Oxyz",
+      "Đường đi ngắn nhất"
+    ],
+    "highlights": "Tính diện tích hoa văn hình tròn - parabol, bài toán 4 điểm đồng phẳng Oxyz & thuật toán đường đi ngắn nhất.",
+    "answers": {
+      "part1": [
+        "D",
+        "D",
+        "C",
+        "C",
+        "C",
+        "A",
+        "A",
+        "D",
+        "B",
+        "B",
+        "A",
+        "A"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        }
+      ],
+      "part3": [
+        "0,39",
+        "3,18",
+        "547",
+        "20",
+        "17,2",
+        "1000"
+      ]
+    }
+  },
+  {
+    "id": 6,
+    "code": "ĐỀ SỐ 06",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 06",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 9,
+    "examPdf": "/bo_de/de_6.pdf",
+    "solutionPdf": "/bo_de/giai_6.pdf",
+    "tags": [
+      "Quãng đường tích phân",
+      "Cấp số nhân lãi suất",
+      "Mặt cầu lều Oxyz",
+      "Xác suất Bayes"
+    ],
+    "highlights": "Bài toán bán kính sàn lều hình cầu trong Oxyz, bài toán tổng chi phí sơn trang trí & xác suất có điều kiện.",
+    "answers": {
+      "part1": [
+        "D",
+        "B",
+        "C",
+        "B",
+        "C",
+        "B",
+        "C",
+        "C",
+        "A",
+        "C",
+        "B",
+        "D"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        }
+      ],
+      "part3": [
+        "25",
+        "55",
+        "2,83",
+        "100",
+        "3,74",
+        "0,12"
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "code": "ĐỀ SỐ 07",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 07",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 6,
+    "solutionPages": 12,
+    "examPdf": "/bo_de/de_7.pdf",
+    "solutionPdf": "/bo_de/giai_7.pdf",
+    "tags": [
+      "Kim tự tháp Cheops",
+      "Lãi kép gửi góp",
+      "Tốc độ dâng nước chậu bán cầu",
+      "Xác suất bảng ô vuông"
+    ],
+    "highlights": "Góc nhị diện Kim tự tháp Khufu Ai Cập, đạo hàm tốc độ dâng nước trong chậu bán cầu & diện tích khu đất.",
+    "answers": {
+      "part1": [
+        "C",
+        "B",
+        "C",
+        "D",
+        "A",
+        "C",
+        "D",
+        "B",
+        "D",
+        "A",
+        "A",
+        "B"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": false,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        }
+      ],
+      "part3": [
+        "52",
+        "504",
+        "0,05",
+        "1,84",
+        "0,66",
+        "0,14"
+      ]
+    }
+  },
+  {
+    "id": 8,
+    "code": "ĐỀ SỐ 08",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 08",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 11,
+    "examPdf": "/bo_de/de_8.pdf",
+    "solutionPdf": "/bo_de/giai_8.pdf",
+    "tags": [
+      "Quy hoạch tuyến tính",
+      "Thể tích bê tông tích phân",
+      "Tối ưu lợi nhuận",
+      "Góc đường thẳng & mặt phẳng"
+    ],
+    "highlights": "Bài toán tối ưu số bó hoa (quy hoạch tuyến tính), tính tiền đổ bê tông & tối ưu sản lượng sản xuất.",
+    "answers": {
+      "part1": [
+        "A",
+        "B",
+        "B",
+        "A",
+        "B",
+        "B",
+        "B",
+        "A",
+        "C",
+        "D",
+        "B",
+        "B"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        }
+      ],
+      "part3": [
+        "1,73",
+        "0,17",
+        "1140",
+        "253",
+        "100",
+        "27"
+      ]
+    }
+  },
+  {
+    "id": 9,
+    "code": "ĐỀ SỐ 09",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 09",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 12,
+    "examPdf": "/bo_de/de_9.pdf",
+    "solutionPdf": "/bo_de/giai_9.pdf",
+    "tags": [
+      "Góc hai đường thẳng Oxyz",
+      "Tối ưu vỏ lon hình trụ",
+      "Diện tích tráng men gạch",
+      "Xác suất Bayes"
+    ],
+    "highlights": "Tối ưu bán kính lon nước giải khát 330ml, tính chi phí tráng men 100.000 viên gạch & góc nhị diện.",
+    "answers": {
+      "part1": [
+        "A",
+        "B",
+        "D",
+        "B",
+        "D",
+        "A",
+        "C",
+        "B",
+        "D",
+        "A",
+        "B",
+        "A"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": false,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        }
+      ],
+      "part3": [
+        "45,9",
+        "45",
+        "0,84",
+        "0,45",
+        "3,74",
+        "2,65"
+      ]
+    }
+  },
+  {
+    "id": 10,
+    "code": "ĐỀ SỐ 10",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 10",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 11,
+    "examPdf": "/bo_de/de_10.pdf",
+    "solutionPdf": "/bo_de/giai_10.pdf",
+    "tags": [
+      "Nhận diện đồ thị bậc 3",
+      "Vận tốc thực máy bay & Radar",
+      "Tối ưu đường dây",
+      "Tích phân diện tích"
+    ],
+    "highlights": "Bài toán radar theo dõi vận tốc máy bay bằng đạo hàm hàm hợp, kiểm định lỗi sản phẩm nhà máy & cực trị Oxyz.",
+    "answers": {
+      "part1": [
+        "D",
+        "A",
+        "D",
+        "C",
+        "D",
+        "A",
+        "A",
+        "B",
+        "A",
+        "B",
+        "D",
+        "D"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": true
+        }
+      ],
+      "part3": [
+        "1",
+        "0,11",
+        "170",
+        "8,9",
+        "622",
+        "-2"
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "code": "ĐỀ SỐ 11",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 11",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 5,
+    "solutionPages": 11,
+    "examPdf": "/bo_de/de_11.pdf",
+    "solutionPdf": "/bo_de/giai_11.pdf",
+    "tags": [
+      "Mô hình tăng trưởng dân số",
+      "Tối ưu lăng trụ lục giác đều",
+      "Khối tròn xoay",
+      "Xác suất cây"
+    ],
+    "highlights": "Ứng dụng tích phân tính dân số Việt Nam, tối ưu thể tích lăng trụ lục giác đều & xác suất tuyển dụng cán bộ.",
+    "answers": {
+      "part1": [
+        "B",
+        "D",
+        "C",
+        "A",
+        "B",
+        "C",
+        "A",
+        "D",
+        "C",
+        "B",
+        "A",
+        "A"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": false
+        }
+      ],
+      "part3": [
+        "0,43",
+        "4",
+        "15",
+        "21,2",
+        "7,93",
+        "0,48"
+      ]
+    }
+  },
+  {
+    "id": 12,
+    "code": "ĐỀ SỐ 12",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 12",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 6,
+    "solutionPages": 11,
+    "examPdf": "/bo_de/de_12.pdf",
+    "solutionPdf": "/bo_de/giai_12.pdf",
+    "tags": [
+      "Mặt cầu Apollonius Oxyz",
+      "Tích phân khu vườn Elip",
+      "Lãi thẻ tín dụng",
+      "Công suất cực đại"
+    ],
+    "highlights": "Đường ray đèn chiếu sáng (mặt cầu Apollonius giao mặt phẳng), diện tích lát gạch elip & tính phí thẻ tín dụng.",
+    "answers": {
+      "part1": [
+        "C",
+        "A",
+        "D",
+        "D",
+        "A",
+        "C",
+        "C",
+        "A",
+        "D",
+        "B",
+        "D",
+        "B"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        }
+      ],
+      "part3": [
+        "0,39",
+        "1720",
+        "7,38",
+        "2,12",
+        "2429",
+        "18"
+      ]
+    }
+  },
+  {
+    "id": 13,
+    "code": "ĐỀ SỐ 13",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 13",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 7,
+    "solutionPages": 11,
+    "examPdf": "/bo_de/de_13.pdf",
+    "solutionPdf": "/bo_de/giai_13.pdf",
+    "tags": [
+      "Khoảng cách hai máy bay Oxyz",
+      "Thể tích căn nhà lăng trụ",
+      "Tích phân khối tròn xoay",
+      "Xác suất Bayes"
+    ],
+    "highlights": "Khoảng cách ngắn nhất giữa 2 máy bay trong Oxyz, thể tích căn nhà mái nghiêng & diện tích hình phẳng.",
+    "answers": {
+      "part1": [
+        "D",
+        "C",
+        "B",
+        "C",
+        "C",
+        "D",
+        "D",
+        "A",
+        "C",
+        "C",
+        "A",
+        "A"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": true,
+          "d": true
+        }
+      ],
+      "part3": [
+        "773",
+        "260",
+        "0,43",
+        "16,8",
+        "13,5",
+        "30,2"
+      ]
+    }
+  },
+  {
+    "id": 14,
+    "code": "ĐỀ SỐ 14",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 14",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 4,
+    "solutionPages": 10,
+    "examPdf": "/bo_de/de_14.pdf",
+    "solutionPdf": "/bo_de/giai_14.pdf",
+    "tags": [
+      "Lãi suất vay ngân hàng",
+      "Tối ưu lợi nhuận sau thuế",
+      "Chi phí trang trí cổng Parabol",
+      "Thể tích khối chóp"
+    ],
+    "highlights": "Bài toán tối ưu lợi nhuận nhà máy sau thuế, tính tiền trả nợ ngân hàng & tích phân diện tích cổng.",
+    "answers": {
+      "part1": [
+        "A",
+        "C",
+        "D",
+        "A",
+        "B",
+        "C",
+        "B",
+        "C",
+        "D",
+        "D",
+        "B",
+        "C"
+      ],
+      "part2": [
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": true,
+          "c": true,
+          "d": false
+        }
+      ],
+      "part3": [
+        "7,08",
+        "6235",
+        "2810",
+        "2150",
+        "0,68",
+        "0,33"
+      ]
+    }
+  },
+  {
+    "id": 15,
+    "code": "ĐỀ SỐ 15",
+    "title": "Đề Ôn Tập Thi Tốt Nghiệp THPT 2026 - Đề số 15",
+    "author": "Sưu tầm & biên soạn: Nguyễn Đức Anh",
+    "duration": 90,
+    "examPages": 6,
+    "solutionPages": 12,
+    "examPdf": "/bo_de/de_15.pdf",
+    "solutionPdf": "/bo_de/giai_15.pdf",
+    "tags": [
+      "Tối ưu thùng hàng Logistics",
+      "Trạm giám sát Oxyz",
+      "Tối ưu giá bán điện thoại",
+      "Cực trị hàm phân thức"
+    ],
+    "highlights": "Tối ưu thể tích thùng hàng hình hộp khi biết diện tích toàn phần & đường chéo, bài toán mặt cầu Oxyz.",
+    "answers": {
+      "part1": [
+        "C",
+        "C",
+        "D",
+        "D",
+        "D",
+        "A",
+        "D",
+        "C",
+        "D",
+        "A",
+        "C",
+        "C"
+      ],
+      "part2": [
+        {
+          "a": false,
+          "b": true,
+          "c": false,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": true
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": true,
+          "d": false
+        },
+        {
+          "a": true,
+          "b": false,
+          "c": false,
+          "d": false
+        }
+      ],
+      "part3": [
+        "11,3",
+        "76",
+        "-5",
+        "8",
+        "20",
+        "3,75"
+      ]
+    }
+  }
+]

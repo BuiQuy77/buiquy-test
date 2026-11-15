@@ -1,12 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MathView from '../MathView';
-import { Sliders, Sparkles, HelpCircle } from 'lucide-react';
 
 const FUNCTIONS = [
-  { id: 'poly', name: 'f(x) = x² - 2x + 2', fn: (x) => x * x - 2 * x + 2, str: 'x^2 - 2x + 2', exactAntideriv: (x) => (x**3)/3 - x*x + 2*x },
-  { id: 'sin', name: 'f(x) = sin(x) + 1.2', fn: (x) => Math.sin(x) + 1.2, str: '\\sin(x) + 1.2', exactAntideriv: (x) => -Math.cos(x) + 1.2*x },
-  { id: 'sqrt', name: 'f(x) = √x', fn: (x) => Math.sqrt(Math.max(0, x)), str: '\\sqrt{x}', exactAntideriv: (x) => (2/3) * Math.pow(Math.max(0, x), 1.5) },
-  { id: 'exp', name: 'f(x) = e^(0.5x)', fn: (x) => Math.exp(0.5 * x), str: 'e^{0.5x}', exactAntideriv: (x) => 2 * Math.exp(0.5 * x) }
+  {
+    id: 'poly',
+    name: 'f(x) = x² - 2x + 2',
+    fn: (x) => x * x - 2 * x + 2,
+    str: 'x^2 - 2x + 2',
+    antiderivStr: 'F(x) = \\frac{x^3}{3} - x^2 + 2x',
+    exactAntideriv: (x) => x ** 3 / 3 - x * x + 2 * x
+  },
+  {
+    id: 'sin',
+    name: 'f(x) = sin(x) + 1.2',
+    fn: (x) => Math.sin(x) + 1.2,
+    str: '\\sin(x) + 1.2',
+    antiderivStr: 'F(x) = -\\cos(x) + 1{,}2x',
+    exactAntideriv: (x) => -Math.cos(x) + 1.2 * x
+  },
+  {
+    id: 'sqrt',
+    name: 'f(x) = √x',
+    fn: (x) => Math.sqrt(Math.max(0, x)),
+    str: '\\sqrt{x}',
+    antiderivStr: 'F(x) = \\frac{2}{3}x\\sqrt{x}',
+    exactAntideriv: (x) => (2 / 3) * Math.pow(Math.max(0, x), 1.5)
+  },
+  {
+    id: 'exp',
+    name: 'f(x) = e^(0.5x)',
+    fn: (x) => Math.exp(0.5 * x),
+    str: 'e^{0.5x}',
+    antiderivStr: 'F(x) = 2e^{0{,}5x}',
+    exactAntideriv: (x) => 2 * Math.exp(0.5 * x)
+  }
 ];
 
 export default function RiemannIntegralLab() {
@@ -14,21 +41,27 @@ export default function RiemannIntegralLab() {
   const [selectedFn, setSelectedFn] = useState(FUNCTIONS[0]);
   const [a, setA] = useState(0.5);
   const [b, setB] = useState(3.5);
-  const [n, setN] = useState(12); // number of subintervals
-  const [method, setMethod] = useState('mid'); // 'left', 'mid', 'right'
+  const [n, setN] = useState(12);
+  const [method, setMethod] = useState('mid'); // 'left' | 'mid' | 'right'
 
-  const exactVal = selectedFn.exactAntideriv(b) - selectedFn.exactAntideriv(a);
+  const safeA = Math.max(0, Math.min(a, 4.0));
+  const safeB = Math.max(safeA + 0.5, Math.min(b, 4.5));
 
-  const dx = (b - a) / n;
+  const fa = selectedFn.exactAntideriv(safeA);
+  const fb = selectedFn.exactAntideriv(safeB);
+  const exactVal = fb - fa;
+
+  const dx = (safeB - safeA) / n;
   let riemannSum = 0;
   for (let i = 0; i < n; i++) {
-    let evalX = a + i * dx;
+    let evalX = safeA + i * dx;
     if (method === 'mid') evalX += dx / 2;
     if (method === 'right') evalX += dx;
     riemannSum += selectedFn.fn(evalX) * dx;
   }
 
-  const errorPct = exactVal !== 0 ? Math.abs((riemannSum - exactVal) / exactVal * 100).toFixed(2) : '0';
+  const errorPct =
+    exactVal !== 0 ? Math.abs(((riemannSum - exactVal) / exactVal) * 100).toFixed(2) : '0.00';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -39,8 +72,10 @@ export default function RiemannIntegralLab() {
 
     ctx.clearRect(0, 0, width, height);
 
-    // Padding & Coordinate transform
-    const padL = 50, padR = 30, padT = 30, padB = 40;
+    const padL = 50,
+      padR = 30,
+      padT = 30,
+      padB = 40;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -52,7 +87,6 @@ export default function RiemannIntegralLab() {
     const toPxX = (x) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
     const toPxY = (y) => padT + (1 - (y - yMin) / (yMax - yMin)) * plotH;
 
-    // Canvas background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
@@ -78,12 +112,11 @@ export default function RiemannIntegralLab() {
     // Axes
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 1.8;
-    // X Axis
     ctx.beginPath();
     ctx.moveTo(toPxX(xMin), toPxY(0));
     ctx.lineTo(toPxX(xMax), toPxY(0));
     ctx.stroke();
-    // Y Axis
+
     ctx.beginPath();
     ctx.moveTo(toPxX(0), toPxY(yMin));
     ctx.lineTo(toPxX(0), toPxY(yMax));
@@ -100,7 +133,7 @@ export default function RiemannIntegralLab() {
 
     // Draw Riemann Rectangles
     for (let i = 0; i < n; i++) {
-      const xLeft = a + i * dx;
+      const xLeft = safeA + i * dx;
       const xRight = xLeft + dx;
       let evalX = xLeft;
       if (method === 'mid') evalX = xLeft + dx / 2;
@@ -112,25 +145,22 @@ export default function RiemannIntegralLab() {
       const pxTop = toPxY(yVal);
       const pxBottom = toPxY(0);
 
-      // Light blue filled rectangle
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.22)';
+      ctx.fillStyle = 'rgba(13, 148, 136, 0.20)';
       ctx.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxBottom - pxTop);
 
-      // Border
-      ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 1.4;
       ctx.strokeRect(pxLeft, pxTop, pxRight - pxLeft, pxBottom - pxTop);
 
-      // Point dot
       ctx.fillStyle = '#d97706';
       ctx.beginPath();
-      ctx.arc(toPxX(evalX), pxTop, 3.5, 0, Math.PI * 2);
+      ctx.arc(toPxX(evalX), pxTop, 3.2, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Continuous curve y = f(x)
-    ctx.strokeStyle = '#2563eb';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2.8;
     ctx.beginPath();
     const steps = 300;
     for (let i = 0; i <= steps; i++) {
@@ -149,49 +179,47 @@ export default function RiemannIntegralLab() {
     ctx.setLineDash([4, 4]);
 
     ctx.beginPath();
-    ctx.moveTo(toPxX(a), toPxY(0));
-    ctx.lineTo(toPxX(a), toPxY(selectedFn.fn(a)));
+    ctx.moveTo(toPxX(safeA), toPxY(0));
+    ctx.lineTo(toPxX(safeA), toPxY(selectedFn.fn(safeA)));
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(toPxX(b), toPxY(0));
-    ctx.lineTo(toPxX(b), toPxY(selectedFn.fn(b)));
+    ctx.moveTo(toPxX(safeB), toPxY(0));
+    ctx.lineTo(toPxX(safeB), toPxY(selectedFn.fn(safeB)));
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Labels a & b
     ctx.fillStyle = '#dc2626';
     ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.fillText(`a=${a}`, toPxX(a) - 10, toPxY(0) + 30);
-    ctx.fillText(`b=${b}`, toPxX(b) - 10, toPxY(0) + 30);
-
-  }, [selectedFn, a, b, n, method]);
+    ctx.fillText(`a=${safeA}`, toPxX(safeA) - 12, toPxY(0) + 30);
+    ctx.fillText(`b=${safeB}`, toPxX(safeB) - 12, toPxY(0) + 30);
+  }, [selectedFn, safeA, safeB, dx, n, method]);
 
   return (
-    <div className="bg-white border border-sky-100 rounded-2xl p-5 shadow-sm space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-sky-100">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <h3 className="text-base md:text-lg font-bold text-slate-800">
-              Bản Chất Tích Phân: Tổng Tích Phân Riemann
-            </h3>
-          </div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded">
+            Mục 2 • Bài 12: Tích phân & Tổng Riemann (Trang 12–18 SGK)
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-1 tracking-[-0.02em]">
+            Bản chất hình học của Tích phân xác định & Công thức Newton-Leibniz
+          </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Minh họa định nghĩa tích phân SGK: Khi số hình chữ nhật <MathView math="n \to \infty" />, tổng diện tích các dải chữ nhật tiến dần tới tích phân chính xác.
+            Khi chia đoạn [a; b] thành n phần bằng nhau với Δx = (b - a)/n và cho n → ∞, tổng diện tích các hình chữ nhật Sₙ = ∑ f(cᵢ)Δx hội tụ về ∫ₐᵇ f(x)dx = F(b) - F(a).
           </p>
         </div>
 
         {/* Function selector */}
-        <div className="flex gap-1.5 bg-sky-50 p-1 rounded-xl border border-sky-200">
+        <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
           {FUNCTIONS.map((f) => (
             <button
               key={f.id}
               onClick={() => setSelectedFn(f)}
-              className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
                 selectedFn.id === f.id
-                  ? 'bg-blue-600 text-white shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-sky-100'
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               {f.name}
@@ -200,86 +228,111 @@ export default function RiemannIntegralLab() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Canvas */}
-        <div className="lg:col-span-2 bg-slate-50 rounded-xl p-3 border border-sky-200 flex justify-center shadow-xs">
+        <div className="lg:col-span-2 bg-slate-50 rounded-xl p-3 border border-slate-200 flex flex-col items-center">
           <canvas
             ref={canvasRef}
             width={640}
             height={360}
-            className="w-full max-w-[640px] h-auto rounded-lg shadow-xs"
+            className="w-full max-w-[640px] h-auto rounded-lg border border-slate-200/80 bg-white"
           />
+          <div className="w-full mt-3 px-3 py-2 bg-white rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <MathView
+              content={`$$\\text{Nguyên hàm: } ${selectedFn.antiderivStr}$$`}
+              className="text-slate-800 font-semibold"
+            />
+            <span className="font-mono text-xs text-teal-800 font-bold">
+              F({safeB}) - F({safeA}) = {fb.toFixed(4)} - ({fa.toFixed(4)}) = {exactVal.toFixed(4)}
+            </span>
+          </div>
         </div>
 
         {/* Sliders & Numbers */}
         <div className="space-y-4">
-          <div className="bg-sky-50/60 p-4 rounded-xl border border-sky-100 space-y-4">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
             {/* Number of intervals n */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-700 font-medium">Số hình chữ nhật (n):</span>
-                <span className="text-blue-700 font-bold text-sm">{n} hình</span>
+                <span className="text-slate-700 font-semibold">Số hình chữ nhật chia nhỏ (n):</span>
+                <span className="text-teal-700 font-bold text-sm font-mono">{n} dải</span>
               </div>
               <input
                 type="range"
                 min="4"
-                max="60"
+                max="80"
                 step="2"
                 value={n}
-                onChange={(e) => setN(parseInt(e.target.value))}
-                className="w-full h-2 bg-sky-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                onChange={(e) => setN(parseInt(e.target.value, 10))}
+                className="w-full accent-slate-900 cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                <span>4 (thô)</span>
-                <span>30 (khá mịn)</span>
-                <span>60 (rất mịn)</span>
+                <span>4 (xấp xỉ thô)</span>
+                <span>40 (khá mịn)</span>
+                <span>80 (hội tụ sát)</span>
               </div>
             </div>
 
             {/* Bounds a and b */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-slate-600 block mb-1 font-medium">Cận dưới a:</label>
+                <label className="text-[11px] text-slate-600 block mb-1 font-semibold">
+                  Cận dưới a:
+                </label>
                 <input
                   type="number"
                   step="0.5"
                   min="0"
-                  max={b - 0.5}
-                  value={a}
-                  onChange={(e) => setA(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-sm text-slate-800"
+                  max={+(safeB - 0.5).toFixed(1)}
+                  value={safeA}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!Number.isNaN(val)) {
+                      setA(Math.max(0, Math.min(val, safeB - 0.5)));
+                    }
+                  }}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-800"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-slate-600 block mb-1 font-medium">Cận trên b:</label>
+                <label className="text-[11px] text-slate-600 block mb-1 font-semibold">
+                  Cận trên b:
+                </label>
                 <input
                   type="number"
                   step="0.5"
-                  min={a + 0.5}
+                  min={+(safeA + 0.5).toFixed(1)}
                   max="4.5"
-                  value={b}
-                  onChange={(e) => setB(parseFloat(e.target.value) || 1)}
-                  className="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-sm text-slate-800"
+                  value={safeB}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!Number.isNaN(val)) {
+                      setB(Math.max(safeA + 0.5, Math.min(val, 4.5)));
+                    }
+                  }}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-mono text-slate-800"
                 />
               </div>
             </div>
 
             {/* Method choice */}
             <div>
-              <label className="text-[11px] text-slate-600 block mb-1.5 font-medium">Cách lấy điểm đại diện:</label>
+              <label className="text-[11px] text-slate-600 block mb-1.5 font-semibold">
+                Cách chọn điểm lấy chiều cao dải chữ nhật:
+              </label>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
-                  { id: 'left', label: 'Cận trái' },
+                  { id: 'left', label: 'Đầu mút trái' },
                   { id: 'mid', label: 'Trung điểm' },
-                  { id: 'right', label: 'Cận phải' }
+                  { id: 'right', label: 'Đầu mút phải' }
                 ].map((m) => (
                   <button
                     key={m.id}
                     onClick={() => setMethod(m.id)}
-                    className={`py-1 text-xs rounded-lg border font-medium transition-all cursor-pointer ${
+                    className={`py-1.5 text-xs rounded-lg border font-semibold transition-all cursor-pointer ${
                       method === m.id
-                        ? 'bg-blue-600 border-blue-600 text-white font-semibold shadow-xs'
-                        : 'bg-white border-sky-200 text-slate-600 hover:bg-sky-50'
+                        ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}
                   >
                     {m.label}
@@ -290,22 +343,30 @@ export default function RiemannIntegralLab() {
           </div>
 
           {/* Precision Comparison Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-sky-100/70 p-4 rounded-xl border border-blue-200/80 space-y-2 shadow-xs">
+          <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200 space-y-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-600">Tổng Riemann (Xấp xỉ):</span>
-              <span className="text-blue-700 font-mono font-bold text-sm">
+              <span className="text-slate-700 font-medium">Bề rộng mỗi dải Δx = (b-a)/n:</span>
+              <span className="text-slate-900 font-mono font-bold text-xs">{dx.toFixed(4)}</span>
+            </div>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-700 font-medium">Tổng Riemann Sₙ (Xấp xỉ):</span>
+              <span className="text-teal-800 font-mono font-bold text-sm">
                 {riemannSum.toFixed(4)}
               </span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-600">Tích phân chính xác:</span>
-              <span className="text-emerald-700 font-mono font-bold text-sm">
+              <span className="text-slate-700 font-medium">Tích phân Newton-Leibniz F(b)-F(a):</span>
+              <span className="text-slate-900 font-mono font-bold text-sm">
                 {exactVal.toFixed(4)}
               </span>
             </div>
-            <div className="pt-2 border-t border-sky-200 flex justify-between items-center text-xs">
-              <span className="text-slate-600">Sai số tương đối:</span>
-              <span className={`font-mono font-bold ${parseFloat(errorPct) < 1 ? 'text-emerald-600' : 'text-amber-600'}`}>
+            <div className="pt-2 border-t border-teal-200 flex justify-between items-center text-xs">
+              <span className="text-slate-700 font-medium">Sai số tương đối |Sₙ - I| / |I|:</span>
+              <span
+                className={`font-mono font-bold ${
+                  parseFloat(errorPct) < 1 ? 'text-teal-700' : 'text-amber-700'
+                }`}
+              >
                 {errorPct}%
               </span>
             </div>

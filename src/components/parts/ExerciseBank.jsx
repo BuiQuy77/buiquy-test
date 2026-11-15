@@ -349,29 +349,29 @@ export default function ExerciseBank() {
   const examResults = isExamSubmitted ? calculateExamScore() : null;
 
   return (
-    <div className="bg-white border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-sm space-y-6">
+    <div className="space-y-6">
       {/* Main Mode Navigation Bar: 1. Luyện Tập vs 2. Luyện Thi TNTHPT */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-sky-100">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-extrabold text-slate-900">
-              Hệ Thống Đánh Giá & Luyện Đề Môn Toán 12
-            </h3>
-          </div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded">
+            Mục 5 • Bài tập cuối chương IV (Trang 27–28 SGK)
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-1 tracking-[-0.02em]">
+            Hệ thống bài tập tự luyện & Đề kiểm tra Chương IV chuẩn cấu trúc 2025
+          </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Phân hệ kép: Luyện tập chuyên sâu từng bài và Thi thử thực chiến chuẩn ma trận đề Bộ GD&ĐT 2025.
+            Phân hệ kép: Luyện tập từng câu có lời giải chi tiết và Đề thi thử 3 phần (Trắc nghiệm 4 lựa chọn, Đúng/Sai, Trả lời ngắn).
           </p>
         </div>
 
         {/* Big Two Mode Switcher Pills */}
-        <div className="flex bg-sky-50 p-1.5 rounded-2xl border border-sky-200 shadow-2xs">
+        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             onClick={() => setActiveTab('practice')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'practice'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-sky-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <BookOpen className="w-4 h-4" />
@@ -379,14 +379,14 @@ export default function ExerciseBank() {
           </button>
           <button
             onClick={() => setActiveTab('exam')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'exam'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-sky-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <FileCheck className="w-4 h-4" />
-            <span>2. Luyện Thi TNTHPT (Chuẩn 2025)</span>
+            <span>2. Đề Kiểm Tra Chương IV (Chuẩn 2025)</span>
           </button>
         </div>
       </div>

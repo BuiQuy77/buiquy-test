@@ -767,18 +767,15 @@ export default function SolidOfRevolution3D() {
   const zoomPercent = Math.round((DEFAULT_ZOOM / zoomRadius) * 100);
 
   return (
-    <div className="bg-white border border-sky-100 rounded-3xl overflow-hidden shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
       {/* Top Banner Toolbar */}
-      <div className="p-4 sm:p-5 border-b border-sky-100 bg-gradient-to-r from-sky-50 via-blue-50/50 to-white flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-600 text-white">
-              Phòng Thí Nghiệm 3D
-            </span>
-            <span className="text-xs text-blue-700 font-bold">• Khối Tròn Xoay & Tích Phân Riemann</span>
-          </div>
-          <h3 className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
-            Mô Phỏng Trực Quan Sự Hình Thành Khối Tròn Xoay Quanh Trục Ox
+          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded">
+            Mục 3 • Bài 13: Ứng dụng hình học của tích phân & Khối tròn xoay 3D (Trang 19–26 SGK)
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-1 tracking-[-0.02em]">
+            <MathView math="Mô phỏng 3D sự hình thành khối tròn xoay quanh trục $Ox$: $V = \pi \int_a^b [f(x)]^2\,dx$" />
           </h3>
         </div>
 

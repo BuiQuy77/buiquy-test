@@ -1,0 +1,15 @@
+node_modules
+.venv
+venv
+.tessdata
+.tessdata_best
+__pycache__
+/dist
+/datasource
+/data
+/BO_DE
+/public/sgk_lessons
+/*.pdf
+/NHẬT KÝ
+*.pyc
+.git

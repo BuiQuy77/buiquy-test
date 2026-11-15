@@ -7,8 +7,9 @@ import katex from 'katex';
  * @param {boolean} block - Display as block or inline
  * @param {string} className - Additional CSS classes
  */
-export default function MathView({ math = '', block = false, className = '' }) {
-  const content = typeof math === 'string' ? math : String(math ?? '');
+export default function MathView({ math = '', content: contentProp = '', block = false, className = '' }) {
+  const rawInput = math || contentProp || '';
+  const content = typeof rawInput === 'string' ? rawInput : String(rawInput ?? '');
 
   const rendered = useMemo(() => {
     if (!content) return null;
@@ -87,7 +88,11 @@ export default function MathView({ math = '', block = false, className = '' }) {
             return (
               <span
                 key={idx}
-                className={token.isDisplay ? 'block text-center my-1' : 'inline-block mx-0.5'}
+                className={
+                  token.isDisplay
+                    ? 'block text-center my-1 overflow-x-auto max-w-full scrollbar-none'
+                    : 'inline-block mx-0.5 max-w-full'
+                }
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             );

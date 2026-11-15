@@ -5,42 +5,48 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   body {
-    background-color: #f0f7ff;
-    color: #1e293b;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f4f5f7;
+    color: #0f172a;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  h1, h2, h3 {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Custom scrollbar ONLY for main page/body/sidebar, NOT inside math formulas */
+/* Subtle neutral scrollbar */
 body::-webkit-scrollbar,
 aside div::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 body::-webkit-scrollbar-track,
 aside div::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #e0f2fe;
+  background: #f1f5f9;
 }
 
 body::-webkit-scrollbar-thumb,
 aside div::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #7dd3fc;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
 body::-webkit-scrollbar-thumb:hover,
 aside div::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: #94a3b8;
 }
 
-/* Scrollbar none utility */
 .scrollbar-none::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
@@ -57,12 +63,4 @@ aside div::-webkit-scrollbar-thumb:hover,
 .katex {
   overflow-x: visible !important;
   scrollbar-width: none !important;
-}
-
-/* Glassmorphism helpers for light theme */
-.glass-panel-light {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(186, 230, 253, 0.8);
 }

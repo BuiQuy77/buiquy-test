@@ -1,45 +1,41 @@
 import React, { useState } from 'react';
 import MathView from '../MathView';
-import { Rocket, Factory, TrendingUp, HeartPulse, Play, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Rocket, Factory, TrendingUp, HeartPulse } from 'lucide-react';
 
 export default function StemSimulations() {
   const [activeTab, setActiveTab] = useState('pottery');
 
-  // Pottery state (Bài 4.35)
+  // 1. Pottery state (Bài 4.35 SGK trang 28 - Bình gốm Bát Tràng)
+  // Đường sinh mặt ngoài y = (1/175)x^2 + (3/35)x + 2 (0 <= x <= H), bán kính đáy tại x = 0 là 2 cm
   const [potteryHeight, setPotteryHeight] = useState(30); // cm
   const [thickness, setThickness] = useState(1); // cm
 
-  const outerVolume = React.useMemo(() => {
+  const { outerVolume, innerVolume, clayVolume } = React.useMemo(() => {
     const H = potteryHeight;
-    const steps = 100;
+    const steps = 200;
     const dx = H / steps;
-    let sum = 0;
+    let sumOuter = 0;
+    let sumInner = 0;
     for (let i = 0; i < steps; i++) {
       const x = (i + 0.5) * dx;
-      const y = (1 / 175) * x * x + (3 / 35) * x;
-      sum += y * y * dx;
-    }
-    return Math.PI * sum;
-  }, [potteryHeight]);
-
-  const clayVolume = React.useMemo(() => {
-    const H = potteryHeight;
-    const steps = 100;
-    const dx = H / steps;
-    let sum = 0;
-    for (let i = 0; i < steps; i++) {
-      const x = (i + 0.5) * dx;
-      const rOuter = (1 / 175) * x * x + (3 / 35) * x;
+      const rOuter = (1 / 175) * x * x + (3 / 35) * x + 2;
       const rInner = Math.max(0, rOuter - thickness);
-      sum += (rOuter * rOuter - rInner * rInner) * dx;
+      sumOuter += rOuter * rOuter * dx;
+      sumInner += rInner * rInner * dx;
     }
-    return Math.PI * sum;
+    const vOut = Math.PI * sumOuter;
+    const vIn = Math.PI * sumInner;
+    return {
+      outerVolume: vOut,
+      innerVolume: vIn,
+      clayVolume: vOut - vIn
+    };
   }, [potteryHeight, thickness]);
 
-  // Projectile state (Bài 4.7 & 4.30)
+  // 2. Projectile state (Bài 4.7 Tr.11 & Bài 4.30 Tr.28)
   const [v0, setV0] = useState(160);
-  const [g, setG] = useState(9.8);
-  const [simTime, setSimTime] = useState(0);
+  const g = 9.8;
+  const [simTime, setSimTime] = useState(4.0);
   const [isPlayingFlight, setIsPlayingFlight] = useState(false);
 
   const tPeak = v0 / g;
@@ -63,135 +59,178 @@ export default function StemSimulations() {
     return () => clearInterval(timer);
   }, [isPlayingFlight, tPeak]);
 
+  // 3. Lorenz Curve & Gini Coefficient state (Bài 4.16 SGK trang 25)
+  // L(x) = x^p trên [0; 1], hệ số Gini G = 2 * \int_0^1 (x - x^p) dx = (p - 1) / (p + 1)
+  const [lorenzPower, setLorenzPower] = useState(2.0);
+  const [popSharePct, setPopSharePct] = useState(60); // x = 0.60 (60% dân số thu nhập thấp nhất)
+  const giniIndex = (lorenzPower - 1) / (lorenzPower + 1);
+  const popX = popSharePct / 100;
+  const incomeSharePct = Math.pow(popX, lorenzPower) * 100;
+  const inequalityArea = 0.5 - 1 / (lorenzPower + 1);
+
+  // 4. Poiseuille Blood Flow state (Bài 4.13 SGK trang 18)
+  // v(r) = k(R^2 - r^2), lưu lượng Q = \int_0^R 2\pi r v(r) dr = (\pi k R^4) / 2
+  const [arteryR, setArteryR] = useState(0.25); // cm (bán kính động mạch)
+  const [probeRatio, setProbeRatio] = useState(0.4); // r / R
+  const [kFactor, setKFactor] = useState(1200); // hằng số áp suất - độ nhớt (1 / (cm·s))
+
+  const probeR = +(arteryR * probeRatio).toFixed(3);
+  const vMax = kFactor * arteryR * arteryR; // cm/s tại tâm r = 0
+  const vAtProbe = kFactor * (arteryR * arteryR - probeR * probeR); // cm/s tại r
+  const vAvg = 0.5 * vMax; // \bar{v} = (1 / (\pi R^2)) \int_0^R 2\pi r v(r) dr = vMax / 2
+  const bloodFlowQ = (Math.PI * kFactor * Math.pow(arteryR, 4)) / 2; // cm^3/s (mL/s)
+
   return (
-    <div className="bg-white border border-sky-100 rounded-2xl p-5 shadow-sm space-y-5">
-      <div className="flex items-center justify-between pb-3 border-b border-sky-100 flex-wrap gap-3">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200 flex-wrap gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <h3 className="text-base md:text-lg font-bold text-slate-800">
-              Phòng Thí Nghiệm STEM: Ứng Dụng Tích Phân Vào Đời Sống Thực Tiễn
-            </h3>
-          </div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded">
+            Mục 4 • Mô phỏng thực tiễn STEM trong SGK Chương IV
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-1 tracking-[-0.02em]">
+            Phòng thí nghiệm ứng dụng Nguyên hàm & Tích phân trong Kỹ thuật, Cơ học, Kinh tế, Y sinh
+          </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Mô phỏng 4 bài toán thực tiễn tiêu biểu trích xuất trực tiếp từ SGK Toán 12 KNTT.
+            Trực quan hóa 4 bài toán thực tế trích trực tiếp từ SGK Toán 12 Tập 2 KNTT (Bài 4.7, Bài 4.13, Bài 4.16 và Bài 4.35).
           </p>
         </div>
 
         {/* Tab switch */}
-        <div className="flex flex-wrap gap-1.5 bg-sky-50 p-1 rounded-xl border border-sky-200">
+        <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             onClick={() => setActiveTab('pottery')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'pottery' ? 'bg-amber-500 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'pottery'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <Factory className="w-3.5 h-3.5" />
-            Gốm Sứ Bát Tràng
+            1. Bình gốm Bát Tràng (Bài 4.35)
           </button>
           <button
             onClick={() => setActiveTab('ballistics')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'ballistics' ? 'bg-amber-500 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'ballistics'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <Rocket className="w-3.5 h-3.5" />
-            Cơ Học & Đạn Pháo (Bài 4.7)
+            2. Đạn pháo & Cơ học (Bài 4.7)
           </button>
           <button
             onClick={() => setActiveTab('lorenz')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'lorenz' ? 'bg-amber-500 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'lorenz'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            Kinh Tế Lorenz (Bài 4.16)
+            3. Kinh tế Lorenz & Gini (Bài 4.16)
           </button>
           <button
             onClick={() => setActiveTab('blood')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'blood' ? 'bg-amber-500 text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'blood'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <HeartPulse className="w-3.5 h-3.5" />
-            Y Sinh & Dòng Máu (Bài 4.13)
+            4. Y sinh & Dòng máu (Bài 4.13)
           </button>
         </div>
       </div>
 
-      {/* Tab 1: Pottery */}
+      {/* Tab 1: Pottery (Bài 4.35 trang 28 SGK) */}
       {activeTab === 'pottery' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-sky-50/40 p-5 rounded-xl border border-sky-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-xl border border-slate-200">
           <div className="space-y-4">
             <div className="border-l-3 border-amber-500 pl-3">
-              <h4 className="text-slate-800 font-bold text-sm">
-                Bài toán chế tác gốm sứ truyền thống (SGK Trang 28 - Bài 4.35)
+              <h4 className="text-slate-900 font-bold text-sm">
+                Bài toán chế tác bình gốm Bát Tràng (SGK Trang 28 - Bài 4.35)
               </h4>
-              <p className="text-xs text-slate-600 mt-1">
-                Bình gốm có mặt trong là khối tròn xoay của đồ thị hàm số:
-                <MathView math="y = \frac{1}{175}x^2 + \frac{3}{35}x \quad (0 \le x \le 30\text{ cm})" className="text-amber-800 font-mono text-xs mx-1 font-semibold" />
-                quay quanh trục Ox. Bình có độ dày thành không đổi <MathView math="d = 1\text{ cm}" />.
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                Một nghệ nhân gốm Bát Tràng chế tác chiếc bình có đường sinh mặt ngoài là đồ thị hàm số:
+                <MathView
+                  math="y = \frac{1}{175}x^2 + \frac{3}{35}x + 2 \quad (0 \le x \le H\text{ cm})"
+                  className="text-amber-800 font-mono text-xs mx-1 font-semibold"
+                />
+                quay quanh trục Ox (bán kính đáy tại x = 0 là R(0) = 2 cm, bán kính miệng tại x = 30 là R(30) ≈ 9,71 cm). Thành bình dày d cm.
               </p>
             </div>
 
-            <div className="space-y-3 bg-white p-4 rounded-xl border border-sky-200 shadow-xs">
+            <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200">
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-700 font-medium">Chiều cao bình gốm (H):</span>
-                  <span className="text-amber-600 font-bold">{potteryHeight} cm</span>
+                  <span className="text-slate-700 font-semibold">Chiều cao bình gốm (H):</span>
+                  <span className="text-amber-700 font-mono font-bold">{potteryHeight} cm</span>
                 </div>
                 <input
                   type="range"
                   min="15"
                   max="45"
                   value={potteryHeight}
-                  onChange={(e) => setPotteryHeight(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-sky-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  onChange={(e) => setPotteryHeight(parseInt(e.target.value, 10))}
+                  className="w-full accent-slate-900 cursor-pointer"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-700 font-medium">Độ dày thành bình (d):</span>
-                  <span className="text-amber-600 font-bold">{thickness} cm</span>
+                  <span className="text-slate-700 font-semibold">Độ dày thành bình gốm (d):</span>
+                  <span className="text-amber-700 font-mono font-bold">{thickness} cm</span>
                 </div>
                 <input
                   type="range"
                   min="0.5"
-                  max="3"
+                  max="2.0"
                   step="0.1"
                   value={thickness}
                   onChange={(e) => setThickness(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-sky-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  className="w-full accent-slate-900 cursor-pointer"
                 />
               </div>
             </div>
 
-            <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-xl">
-              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
-                Kết quả tính toán tích phân kỹ thuật:
+            <div className="bg-amber-50/80 border border-amber-200 p-4 rounded-xl space-y-2">
+              <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
+                Kết quả tính toán bằng tích phân khối tròn xoay:
               </span>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div>
-                  <span className="text-[11px] text-slate-500 block">Dung tích lòng bình:</span>
-                  <span className="text-lg font-black text-slate-900 font-mono">
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="bg-white p-2.5 rounded-lg border border-amber-200/70">
+                  <span className="text-[11px] text-slate-500 block">Thể tích phủ bì:</span>
+                  <span className="text-sm font-bold text-slate-900 font-mono">
                     {outerVolume.toFixed(1)} cm³
                   </span>
-                  <span className="text-[10px] text-slate-500 block">≈ {(outerVolume / 1000).toFixed(2)} Lít</span>
+                  <span className="text-[10px] text-slate-500 block">
+                    ≈ {(outerVolume / 1000).toFixed(2)} Lít
+                  </span>
                 </div>
-                <div>
-                  <span className="text-[11px] text-amber-700 block font-semibold">Lượng đất sét cần dùng:</span>
-                  <span className="text-lg font-black text-amber-600 font-mono">
+                <div className="bg-white p-2.5 rounded-lg border border-amber-200/70">
+                  <span className="text-[11px] text-slate-500 block">Dung tích lòng bình:</span>
+                  <span className="text-sm font-bold text-teal-800 font-mono">
+                    {innerVolume.toFixed(1)} cm³
+                  </span>
+                  <span className="text-[10px] text-slate-500 block">
+                    ≈ {(innerVolume / 1000).toFixed(2)} Lít
+                  </span>
+                </div>
+                <div className="bg-white p-2.5 rounded-lg border border-amber-200/70">
+                  <span className="text-[11px] text-amber-800 font-semibold block">Lượng đất sét:</span>
+                  <span className="text-sm font-bold text-amber-700 font-mono">
                     {clayVolume.toFixed(1)} cm³
                   </span>
-                  <span className="text-[10px] text-slate-500 block">Vật liệu đúc thành bình</span>
+                  <span className="text-[10px] text-slate-500 block">V_ngoài - V_trong</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* SVG Illustration */}
-          <div className="flex flex-col items-center justify-center bg-white rounded-xl p-5 border border-sky-200 shadow-xs">
+          <div className="flex flex-col items-center justify-center bg-white rounded-xl p-5 border border-slate-200">
             <svg viewBox="0 0 420 220" className="w-full max-w-[420px] h-auto overflow-visible">
               <defs>
                 <linearGradient id="potteryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -200,70 +239,114 @@ export default function StemSimulations() {
                 </linearGradient>
               </defs>
               {/* Trục xoay Ox */}
-              <line x1="25" y1="110" x2="390" y2="110" stroke="#94a3b8" strokeDasharray="4 4" strokeWidth="1.5" />
+              <line
+                x1="25"
+                y1="110"
+                x2="390"
+                y2="110"
+                stroke="#94a3b8"
+                strokeDasharray="4 4"
+                strokeWidth="1.5"
+              />
               <polygon points="390,106 398,110 390,114" fill="#94a3b8" />
 
-              {/* Vỏ ngoài bình gốm */}
+              {/* Vỏ ngoài bình gốm (đáy bán kính R(0) = 2cm > 0) */}
               <path
-                d="M 75 110 Q 150 70 230 40 Q 270 20 300 20 L 300 200 Q 270 200 230 180 Q 150 150 75 110 Z"
+                d="M 75 88 Q 150 68 230 42 Q 270 22 300 20 L 300 200 Q 270 198 230 178 Q 150 152 75 132 Z"
                 fill="url(#potteryGrad)"
                 opacity="0.92"
-                stroke="#d97706"
+                stroke="#b45309"
                 strokeWidth="1.5"
               />
 
-              {/* Lòng rỗng bên trong (co giãn trực quan theo độ dày d) */}
+              {/* Lòng rỗng bên trong */}
               <path
-                d={`M ${75 + thickness * 5} 110 Q 150 ${70 + thickness * 3.5} 230 ${40 + thickness * 4} Q 270 ${20 + thickness * 4.5} 300 ${20 + thickness * 4.5} L 300 ${200 - thickness * 4.5} Q 270 ${200 - thickness * 4.5} 230 ${180 - thickness * 4} Q 150 ${150 - thickness * 3.5} ${75 + thickness * 5} 110 Z`}
-                fill="#f0f7ff"
+                d={`M ${75 + thickness * 5} ${88 + thickness * 3.5} Q 150 ${68 + thickness * 3.5} 230 ${42 + thickness * 4} Q 270 ${22 + thickness * 4.5} 300 ${20 + thickness * 4.5} L 300 ${200 - thickness * 4.5} Q 270 ${198 - thickness * 4.5} 230 ${178 - thickness * 4} Q 150 ${152 - thickness * 3.5} ${75 + thickness * 5} ${132 - thickness * 3.5} Z`}
+                fill="#f8fafc"
                 stroke="#cbd5e1"
                 strokeWidth="1"
               />
 
-              {/* Chú thích văn bản rộng rãi, không bị tràn viền */}
-              <text x="190" y="114" fill="#64748b" fontSize="11" textAnchor="middle" fontWeight="500">Trục xoay Ox</text>
-              <text x="312" y="114" fill="#b45309" fontSize="11" textAnchor="start" fontWeight="bold">Miệng bình</text>
-              <text x="65" y="114" fill="#b45309" fontSize="11" textAnchor="end" fontWeight="bold">Đáy bình</text>
+              <text x="190" y="114" fill="#64748b" fontSize="11" textAnchor="middle" fontWeight="500">
+                Trục quay Ox
+              </text>
+              <text x="312" y="114" fill="#b45309" fontSize="11" textAnchor="start" fontWeight="bold">
+                Miệng (x={potteryHeight})
+              </text>
+              <text x="65" y="114" fill="#b45309" fontSize="11" textAnchor="end" fontWeight="bold">
+                Đáy R(0)=2cm
+              </text>
             </svg>
             <p className="text-[11px] text-slate-500 text-center mt-3">
-              Mặt cắt ngang cấu trúc bình gốm Bát Tràng (Phần đất sét màu cam nằm giữa vỏ ngoài và lòng rỗng).
+              Mặt cắt dọc bình gốm Bát Tràng: V_ngoài = π ∫₀³⁰ (x²/175 + 3x/35 + 2)² dx ≈ 3668,4 cm³ (với H = 30 cm).
             </p>
           </div>
         </div>
       )}
 
-      {/* Tab 2: Ballistics */}
+      {/* Tab 2: Ballistics (Bài 4.7 trang 11 SGK) */}
       {activeTab === 'ballistics' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-sky-50/40 p-5 rounded-xl border border-sky-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-xl border border-slate-200">
           <div className="space-y-4">
-            <div className="border-l-3 border-emerald-500 pl-3">
-              <h4 className="text-slate-800 font-bold text-sm">
+            <div className="border-l-3 border-teal-600 pl-3">
+              <h4 className="text-slate-900 font-bold text-sm">
                 Động lực học viên đạn bắn thẳng đứng (SGK Trang 11 - Bài 4.7)
               </h4>
-              <p className="text-xs text-slate-600 mt-1">
-                Vận tốc tại thời điểm <MathView math="t" /> giây là <MathView math="v(t) = 160 - 9.8t \text{ (m/s)}" />.
-                Độ cao đạt được là tích phân của hàm vận tốc:
-                <MathView math="s(t) = \int_0^t v(\tau) d\tau = 160t - 4.9t^2" className="text-emerald-700 font-mono text-xs block my-1 font-semibold" />
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                Một viên đạn được bắn thẳng đứng lên trên từ mặt đất với vận tốc đầu v₀ = {v0} m/s, vận tốc tại thời điểm t là v(t) = {v0} - 9,8t (m/s). Độ cao của viên đạn là nguyên hàm của vận tốc:
+                <MathView
+                  math={`s(t) = \\int_0^t (${v0} - 9{,}8\\tau)\\,d\\tau = ${v0}t - 4{,}9t^2\\text{ (m)}`}
+                  className="text-teal-800 font-mono text-xs block my-1 font-semibold"
+                />
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-sky-200 shadow-xs space-y-3">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-700 font-medium">Trạng thái mô phỏng:</span>
+                <span className="text-xs text-slate-700 font-semibold">
+                  <MathView math="Vận tốc ban đầu $v_0$:" />
+                </span>
+                <div className="flex gap-1.5">
+                  {[120, 160, 200].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => {
+                        setIsPlayingFlight(false);
+                        setV0(val);
+                        setSimTime(3.0);
+                      }}
+                      className={`px-2.5 py-1 rounded text-xs font-mono font-bold border cursor-pointer ${
+                        v0 === val
+                          ? 'bg-slate-900 text-white border-slate-900'
+                          : 'bg-slate-50 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      {val} m/s {val === 160 ? '(SGK)' : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span className="text-xs text-slate-700 font-semibold">Mô phỏng theo thời gian:</span>
                 <button
                   onClick={() => setIsPlayingFlight(!isPlayingFlight)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    isPlayingFlight ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    isPlayingFlight
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-teal-600 text-white hover:bg-teal-700'
                   }`}
                 >
-                  {isPlayingFlight ? 'Tạm dừng' : 'Bắn pháo (Chạy)'}
+                  {isPlayingFlight ? 'Tạm dừng' : 'Chạy mô phỏng bay'}
                 </button>
               </div>
 
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-600">Thời gian bay (t):</span>
-                  <span className="text-emerald-700 font-bold">{simTime} s / {(2 * tPeak).toFixed(1)} s</span>
+                  <span className="text-slate-600 font-medium">Thời điểm khảo sát (t):</span>
+                  <span className="text-teal-700 font-mono font-bold">
+                    t = {simTime} s (Đỉnh tại t = {tPeak.toFixed(2)} s)
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -275,33 +358,41 @@ export default function StemSimulations() {
                     setIsPlayingFlight(false);
                     setSimTime(parseFloat(e.target.value));
                   }}
-                  className="w-full h-1.5 bg-sky-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  className="w-full accent-slate-900 cursor-pointer"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white p-3 rounded-xl border border-sky-200 shadow-xs">
-                <span className="text-[11px] text-slate-500 block">Độ cao hiện tại s(t):</span>
-                <span className="text-xl font-bold text-slate-900 font-mono">{currentHeight.toFixed(1)} m</span>
-                <span className="text-[10px] text-slate-400 block">Cực đại: {hMax.toFixed(1)} m</span>
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Độ cao tức thời s(t):</span>
+                <span className="text-xl font-bold text-slate-900 font-mono">
+                  {currentHeight.toFixed(1)} m
+                </span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">
+                  Độ cao cực đại H_max = {hMax.toFixed(1)} m
+                </span>
               </div>
-              <div className="bg-white p-3 rounded-xl border border-sky-200 shadow-xs">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200">
                 <span className="text-[11px] text-slate-500 block">Vận tốc tức thời v(t):</span>
-                <span className={`text-xl font-bold font-mono ${currentVelocity >= 0 ? 'text-emerald-700' : 'text-amber-600'}`}>
+                <span
+                  className={`text-xl font-bold font-mono ${
+                    currentVelocity >= 0 ? 'text-teal-700' : 'text-amber-700'
+                  }`}
+                >
                   {currentVelocity.toFixed(1)} m/s
                 </span>
-                <span className="text-[10px] text-slate-400 block">
-                  {currentVelocity >= 0 ? 'Đang bay lên' : 'Đang rơi xuống'}
+                <span className="text-[10px] text-slate-500 block mt-0.5">
+                  {currentVelocity >= 0 ? 'Đang đi lên (v ≥ 0)' : 'Đang rơi xuống (v < 0)'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Trajectory */}
-          <div className="relative h-[240px] bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col justify-end p-4">
-            <div className="absolute bottom-0 left-0 right-0 h-4 bg-emerald-950/70 border-t border-emerald-800/40"></div>
-            <div className="absolute left-4 top-4 bottom-6 w-8 flex flex-col justify-between text-[10px] text-slate-400 border-r border-slate-700">
+          {/* Trajectory visualization */}
+          <div className="relative h-[260px] bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col justify-end p-4">
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-teal-950/70 border-t border-teal-800/40"></div>
+            <div className="absolute left-4 top-4 bottom-6 w-12 flex flex-col justify-between text-[10px] font-mono text-slate-400 border-r border-slate-700 pr-1">
               <span>{hMax.toFixed(0)}m</span>
               <span>{(hMax / 2).toFixed(0)}m</span>
               <span>0m</span>
@@ -309,53 +400,356 @@ export default function StemSimulations() {
             <div
               className="absolute left-1/2 transform -translate-x-1/2 transition-all duration-75 flex flex-col items-center"
               style={{
-                bottom: `${Math.min(190, 16 + (currentHeight / hMax) * 170)}px`,
+                bottom: `${Math.min(205, 18 + (currentHeight / hMax) * 185)}px`
               }}
             >
-              <div className="w-5 h-5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/80 flex items-center justify-center text-slate-950 font-bold text-[10px]">
-                🚀
+              <div className="w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center text-slate-950 font-bold text-xs shadow-sm">
+                ▲
               </div>
-              <span className="text-[10px] text-cyan-300 font-mono mt-1 bg-slate-950/80 px-1 rounded">
-                {currentHeight.toFixed(0)}m
+              <span className="text-[11px] text-teal-300 font-mono mt-1 bg-slate-950/90 px-2 py-0.5 rounded border border-teal-500/30">
+                s({simTime}s) = {currentHeight.toFixed(1)}m
               </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 3: Lorenz */}
+      {/* Tab 3: Lorenz Curve & Gini Coefficient (Bài 4.16 trang 25 SGK) */}
       {activeTab === 'lorenz' && (
-        <div className="bg-sky-50/40 p-5 rounded-xl border border-sky-100 space-y-4">
-          <div className="border-l-3 border-indigo-500 pl-3">
-            <h4 className="text-slate-800 font-bold text-sm">
-              Đường cong Lorenz & Đo lường bất bình đẳng thu nhập (SGK Trang 25 - Bài 4.16)
-            </h4>
-            <p className="text-xs text-slate-600 mt-1">
-              Đường <MathView math="y = x" /> thể hiện sự bình đẳng tuyệt đối. Đường cong Lorenz <MathView math="y = L(x)" /> thể hiện thực tế phân phối thu nhập. Hệ số Gini được đo bằng:
-              <MathView math="G = 2 \int_0^1 (x - L(x)) dx" className="text-indigo-700 font-mono text-xs inline-block ml-2 font-semibold" />
-            </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-xl border border-slate-200">
+          <div className="space-y-4">
+            <div className="border-l-3 border-indigo-600 pl-3">
+              <h4 className="text-slate-900 font-bold text-sm">
+                Đường cong Lorenz & Hệ số bất bình đẳng thu nhập Gini (SGK Trang 25 - Bài 4.16)
+              </h4>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                <MathView math="Đường phân giác $y = x$ biểu thị sự bình đẳng tuyệt đối. Đường cong Lorenz $y = L(x) = x^p$ ($x \in [0; 1]$) biểu thị tỉ lệ tổng thu nhập của $100x\%$ dân số có thu nhập thấp nhất. Hệ số Gini là tỉ số giữa diện tích hình phẳng giới hạn bởi $y=x$ và $y=L(x)$ so với diện tích tam giác dưới đường $y=x$ (bằng $1/2$):" />
+              </p>
+              <MathView
+                content={`$$G = 2 \\int_0^1 \\left(x - x^{${lorenzPower}}\\right)dx = \\frac{${lorenzPower} - 1}{${lorenzPower} + 1} = ${giniIndex.toFixed(3)}$$`}
+                className="text-indigo-900 font-semibold text-xs mt-2 bg-white p-2.5 rounded-lg border border-slate-200"
+              />
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-700 font-semibold">
+                    <MathView math="Bậc hàm Lorenz $p$ trong $L(x) = x^p$:" />
+                  </span>
+                  <span className="text-indigo-700 font-mono font-bold">
+                    p = {lorenzPower.toFixed(1)} {lorenzPower === 2 ? '(Mẫu câu a Bài 4.16 SGK)' : ''}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1.1"
+                  max="4.0"
+                  step="0.1"
+                  value={lorenzPower}
+                  onChange={(e) => setLorenzPower(parseFloat(e.target.value))}
+                  className="w-full accent-slate-900 cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <span>p = 1.1 (Bình đẳng cao)</span>
+                  <span>p = 2.0 (Gini = 1/3 ≈ 0.333)</span>
+                  <span>p = 4.0 (Chênh lệch lớn)</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-700 font-semibold">
+                    <MathView math="Khảo sát nhóm $x\%$ dân số thu nhập thấp nhất:" />
+                  </span>
+                  <span className="text-indigo-700 font-mono font-bold">
+                    x = {popSharePct}% dân số
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="90"
+                  step="5"
+                  value={popSharePct}
+                  onChange={(e) => setPopSharePct(parseInt(e.target.value, 10))}
+                  className="w-full accent-slate-900 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Diện tích lệch S:</span>
+                <span className="text-base font-bold text-slate-900 font-mono">
+                  {inequalityArea.toFixed(4)}
+                </span>
+                <span className="text-[10px] text-slate-400 block">∫₀¹ (x - xᵖ) dx</span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Hệ số Gini (G = 2S):</span>
+                <span className="text-base font-bold text-indigo-700 font-mono">
+                  {giniIndex.toFixed(3)}
+                </span>
+                <span className="text-[10px] text-slate-400 block">
+                  {giniIndex < 0.35 ? 'Phân phối khá đều' : giniIndex < 0.5 ? 'Trung bình' : 'Bất bình đẳng cao'}
+                </span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">{popSharePct}% dân số nắm:</span>
+                <span className="text-base font-bold text-amber-700 font-mono">
+                  {incomeSharePct.toFixed(1)}%
+                </span>
+                <span className="text-[10px] text-slate-400 block">tổng thu nhập</span>
+              </div>
+            </div>
           </div>
-          <div className="text-xs text-slate-700 bg-white p-3.5 rounded-lg border border-sky-200 shadow-xs">
-            💡 <strong>Ý nghĩa thực tế:</strong> Chỉ số Gini nằm từ 0 (bình đẳng tuyệt đối) đến 1 (bất bình đẳng tuyệt đối). Tích phân chính là công cụ chuẩn mực của Ngân hàng Thế giới (World Bank) và Liên Hợp Quốc để giám sát sự công bằng kinh tế của mọi quốc gia trên toàn cầu!
+
+          {/* Interactive SVG Lorenz Curve */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200 flex flex-col items-center justify-center">
+            {(() => {
+              const size = 240;
+              const pad = 34;
+              const toX = (u) => pad + u * (size - 2 * pad);
+              const toY = (v) => size - pad - v * (size - 2 * pad);
+
+              const curvePts = [];
+              for (let i = 0; i <= 50; i++) {
+                const u = i / 50;
+                const v = Math.pow(u, lorenzPower);
+                curvePts.push(`${toX(u).toFixed(1)},${toY(v).toFixed(1)}`);
+              }
+              const areaPolygon = `${toX(0)},${toY(0)} ${toX(1)},${toY(1)} ${curvePts
+                .slice()
+                .reverse()
+                .join(' ')}`;
+
+              const px = toX(popX);
+              const pyLorenz = toY(Math.pow(popX, lorenzPower));
+              const pyEqual = toY(popX);
+
+              return (
+                <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[290px] h-auto">
+                  {/* Axes */}
+                  <line x1={pad} y1={toY(0)} x2={toX(1)} y2={toY(0)} stroke="#475569" strokeWidth="1.5" />
+                  <line x1={pad} y1={toY(0)} x2={pad} y2={toY(1)} stroke="#475569" strokeWidth="1.5" />
+                  <line x1={toX(1)} y1={toY(0)} x2={toX(1)} y2={toY(1)} stroke="#e2e8f0" strokeDasharray="3 3" />
+                  <line x1={pad} y1={toY(1)} x2={toX(1)} y2={toY(1)} stroke="#e2e8f0" strokeDasharray="3 3" />
+
+                  {/* Shaded inequality area between y = x and y = L(x) */}
+                  <polygon points={areaPolygon} fill="rgba(79, 70, 229, 0.18)" />
+
+                  {/* Line of equality y = x */}
+                  <line
+                    x1={toX(0)}
+                    y1={toY(0)}
+                    x2={toX(1)}
+                    y2={toY(1)}
+                    stroke="#0f766e"
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                  />
+
+                  {/* Lorenz curve y = x^p */}
+                  <polyline
+                    points={curvePts.join(' ')}
+                    fill="none"
+                    stroke="#4f46e5"
+                    strokeWidth="2.6"
+                  />
+
+                  {/* Vertical probe line at popX */}
+                  <line
+                    x1={px}
+                    y1={toY(0)}
+                    x2={px}
+                    y2={pyEqual}
+                    stroke="#f59e0b"
+                    strokeWidth="1.5"
+                    strokeDasharray="3 2"
+                  />
+                  <circle cx={px} cy={pyLorenz} r="4" fill="#4f46e5" />
+
+                  {/* Labels */}
+                  <text x={pad - 10} y={toY(0) + 12} fontSize="9" fill="#475569">
+                    0
+                  </text>
+                  <text x={toX(1) - 4} y={toY(0) + 12} fontSize="9" fill="#475569">
+                    1
+                  </text>
+                  <text x={pad - 12} y={toY(1) + 4} fontSize="9" fill="#475569">
+                    1
+                  </text>
+                  <text x={toX(0.42)} y={toY(0.52)} fontSize="9" fill="#0f766e" fontWeight="bold">
+                    y = x
+                  </text>
+                  <text x={toX(0.58)} y={toY(Math.pow(0.58, lorenzPower)) + 13} fontSize="9" fill="#4f46e5" fontWeight="bold">
+                    L(x) = x^{lorenzPower}
+                  </text>
+                </svg>
+              );
+            })()}
+            <p className="text-[11px] text-slate-500 text-center mt-1">
+              <MathView math="Miền tô màu tím là diện tích $\int_0^1 [x - L(x)]\,dx$. Hệ số Gini bằng $2$ lần diện tích miền này." />
+            </p>
           </div>
         </div>
       )}
 
-      {/* Tab 4: Blood */}
+      {/* Tab 4: Poiseuille Blood Flow (Bài 4.13 trang 18 SGK) */}
       {activeTab === 'blood' && (
-        <div className="bg-sky-50/40 p-5 rounded-xl border border-sky-100 space-y-4">
-          <div className="border-l-3 border-rose-500 pl-3">
-            <h4 className="text-slate-800 font-bold text-sm">
-              Định luật Poiseuille về dòng máu trong động mạch (SGK Trang 18 - Bài 4.13)
-            </h4>
-            <p className="text-xs text-slate-600 mt-1">
-              Vận tốc của dòng máu ở khoảng cách <MathView math="r" /> tính từ tâm động mạch bán kính <MathView math="R" /> là <MathView math="v(r) = k(R^2 - r^2)" />.
-              Lưu lượng máu và vận tốc trung bình qua tiết diện tròn được tính bằng tích phân:
-              <MathView math="\bar{v} = \frac{1}{\pi R^2} \int_0^R v(r) \cdot 2\pi r dr = \frac{1}{2} v_{\max}" className="text-rose-700 font-mono text-xs block my-1 font-semibold" />
-            </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-slate-50/70 p-5 rounded-xl border border-slate-200">
+          <div className="space-y-4">
+            <div className="border-l-3 border-rose-600 pl-3">
+              <h4 className="text-slate-900 font-bold text-sm">
+                Định luật Poiseuille về vận tốc & lưu lượng máu trong động mạch (SGK Trang 18 - Bài 4.13)
+              </h4>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                Vận tốc máu (cm/s) tại vị trí cách tâm động mạch một khoảng r (cm) được cho bởi v(r) = k(R² - r²) với 0 ≤ r ≤ R. Lưu lượng máu Q qua tiết diện tròn và vận tốc trung bình v̄ được xác định bằng tích phân:
+              </p>
+              <MathView
+                content="$$Q = \int_0^R 2\pi r \cdot k(R^2 - r^2)\,dr = \frac{\pi k R^4}{2}, \qquad \bar{v} = \frac{Q}{\pi R^2} = \frac{1}{2}v_{\max}$$"
+                className="text-rose-900 font-semibold text-xs mt-2 bg-white p-2.5 rounded-lg border border-slate-200"
+              />
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-700 font-semibold">Bán kính động mạch (R):</span>
+                  <span className="text-rose-700 font-mono font-bold">{arteryR.toFixed(2)} cm</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.10"
+                  max="0.40"
+                  step="0.02"
+                  value={arteryR}
+                  onChange={(e) => setArteryR(parseFloat(e.target.value))}
+                  className="w-full accent-slate-900 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-700 font-semibold">
+                    Khoảng cách từ tâm mạch đến điểm đo r = {(probeRatio * 100).toFixed(0)}% R:
+                  </span>
+                  <span className="text-rose-700 font-mono font-bold">r = {probeR} cm</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={probeRatio}
+                  onChange={(e) => setProbeRatio(parseFloat(e.target.value))}
+                  className="w-full accent-slate-900 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-700 font-semibold">Hệ số độ chênh áp - độ nhớt (k):</span>
+                  <span className="text-rose-700 font-mono font-bold">k = {kFactor}</span>
+                </div>
+                <input
+                  type="range"
+                  min="600"
+                  max="2000"
+                  step="100"
+                  value={kFactor}
+                  onChange={(e) => setKFactor(parseInt(e.target.value, 10))}
+                  className="w-full accent-slate-900 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Vận tốc tại r={probeR}:</span>
+                <span className="text-base font-bold text-rose-700 font-mono">
+                  {vAtProbe.toFixed(1)} cm/s
+                </span>
+                <span className="text-[10px] text-slate-400 block">
+                  Tâm mạch: {vMax.toFixed(1)} cm/s
+                </span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Vận tốc TB (v̄):</span>
+                <span className="text-base font-bold text-slate-900 font-mono">
+                  {vAvg.toFixed(1)} cm/s
+                </span>
+                <span className="text-[10px] text-slate-400 block">= 1/2 v_max</span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-slate-200">
+                <span className="text-[11px] text-slate-500 block">Lưu lượng máu Q:</span>
+                <span className="text-base font-bold text-teal-800 font-mono">
+                  {bloodFlowQ.toFixed(2)} mL/s
+                </span>
+                <span className="text-[10px] text-slate-400 block">∝ R⁴ (Định luật bậc 4)</span>
+              </div>
+            </div>
           </div>
-          <div className="text-xs text-slate-700 bg-white p-3.5 rounded-lg border border-sky-200 shadow-xs">
-            🩸 <strong>Ứng dụng Y học:</strong> Vận tốc máu ở tâm động mạch nhanh nhất và giảm dần về 0 ở thành mạch do lực ma sát nhớt. Tích phân giúp các bác sĩ tim mạch tính toán chính xác lưu lượng máu bơm qua tim mà không cần xâm lấn gây nguy hiểm cho bệnh nhân.
+
+          {/* SVG Parabolic Blood Velocity Profile */}
+          <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col items-center justify-center">
+            <svg viewBox="0 0 380 210" className="w-full max-w-[380px] h-auto">
+              {/* Artery walls */}
+              <rect x="30" y="30" width="320" height="10" fill="#fda4af" stroke="#e11d48" strokeWidth="1" />
+              <rect x="30" y="170" width="320" height="10" fill="#fda4af" stroke="#e11d48" strokeWidth="1" />
+              <rect x="30" y="40" width="320" height="130" fill="#fff1f2" />
+
+              {/* Centerline r = 0 */}
+              <line x1="30" y1="105" x2="350" y2="105" stroke="#94a3b8" strokeDasharray="4 4" strokeWidth="1.2" />
+
+              {/* Parabolic velocity profile curve */}
+              <path
+                d="M 90 40 Q 330 105 90 170"
+                fill="rgba(225, 29, 72, 0.14)"
+                stroke="#be123c"
+                strokeWidth="2.5"
+              />
+
+              {/* Velocity vectors across radius */}
+              {[-0.8, -0.5, -0.25, 0, 0.25, 0.5, 0.8].map((ratio, idx) => {
+                const yPos = 105 + ratio * 65;
+                const vRatio = 1 - ratio * ratio;
+                const xEnd = 90 + vRatio * 120;
+                return (
+                  <g key={idx}>
+                    <line x1="90" y1={yPos} x2={xEnd} y2={yPos} stroke="#e11d48" strokeWidth="1.8" />
+                    <polygon points={`${xEnd},${yPos - 3} ${xEnd + 6},${yPos} ${xEnd},${yPos + 3}`} fill="#e11d48" />
+                  </g>
+                );
+              })}
+
+              {/* Highlighted probe position r */}
+              {(() => {
+                const yProbe = 105 - probeRatio * 65;
+                const vRatio = 1 - probeRatio * probeRatio;
+                const xProbe = 90 + vRatio * 120;
+                return (
+                  <g>
+                    <line x1="90" y1={yProbe} x2={xProbe} y2={yProbe} stroke="#0f766e" strokeWidth="2.8" />
+                    <circle cx={xProbe} cy={yProbe} r="4.5" fill="#0f766e" />
+                    <text x={xProbe + 10} y={yProbe + 4} fontSize="10" fill="#0f766e" fontWeight="bold">
+                      v(r) = {vAtProbe.toFixed(1)} cm/s
+                    </text>
+                  </g>
+                );
+              })()}
+
+              <text x="36" y="24" fontSize="10" fill="#be123c" fontWeight="bold">
+                Thành động mạch (r = R, v = 0)
+              </text>
+              <text x="245" y="101" fontSize="10" fill="#475569">
+                Trục tâm mạch (r = 0)
+              </text>
+            </svg>
+            <p className="text-[11px] text-slate-500 text-center mt-2">
+              <MathView math="Phân bố vận tốc parabol $v(r) = k(R^2 - r^2)$: Tại tâm mạch ($r=0$) máu chảy nhanh nhất, tại thành mạch ($r=R$) vận tốc bằng $0$." />
+            </p>
           </div>
         </div>
       )}
