@@ -14,25 +14,31 @@ const AUTH_STORAGE_KEY = 'mathmate_active_user_session';
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+      const saved = sessionStorage.getItem(AUTH_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.role && parsed.role !== 'guest') {
+          return parsed;
+        }
       }
     } catch (e) {
       console.error('Lỗi nạp phiên đăng nhập:', e);
     }
-    // Mặc định ban đầu vào vai Khách dùng thử
+    // Mặc định ban đầu luôn là Khách viếng thăm
     return GUEST_USER;
   });
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginNotice, setLoginNotice] = useState('');
 
-  // Lưu phiên vào localStorage mỗi khi thay đổi
+  // Lưu phiên đăng nhập vào sessionStorage
   useEffect(() => {
     try {
-      if (currentUser) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(currentUser));
+      if (currentUser && currentUser.role !== 'guest') {
+        sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(currentUser));
+      } else {
+        sessionStorage.removeItem(AUTH_STORAGE_KEY);
+        localStorage.removeItem(AUTH_STORAGE_KEY);
       }
     } catch (e) {
       console.error('Lỗi lưu phiên đăng nhập:', e);

@@ -153,16 +153,11 @@ export default function StudentManagement() {
         </div>
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
           <button
-            onClick={() => quickLogin('teacher')}
-            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/20 flex items-center gap-2 cursor-pointer transition-all"
+            onClick={() => promptLoginForFeature('Vui lòng đăng nhập tài khoản Giáo viên để truy cập khu vực quản trị.')}
+            className="px-5 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer transition-all"
           >
-            <span>👨‍🏫 Chuyển Sang Vai Trò Giáo Viên (1-Click)</span>
-          </button>
-          <button
-            onClick={() => promptLoginForFeature('Vui lòng đăng nhập tài khoản Giáo viên.')}
-            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer transition-all"
-          >
-            Đăng nhập tài khoản khác
+            <LogIn className="w-4 h-4" />
+            <span>Đăng Nhập Tài Khoản Giáo Viên</span>
           </button>
         </div>
       </div>

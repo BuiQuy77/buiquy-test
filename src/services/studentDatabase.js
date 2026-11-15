@@ -52,7 +52,7 @@ export const DEFAULT_STUDENTS = [
 export const GUEST_USER = {
   id: 'guest_user',
   username: 'guest',
-  name: 'Khách vãng lai (Dùng thử)',
+  name: 'Khách viếng thăm',
   role: 'guest',
   class: 'Tự do',
   avatar: '👤'

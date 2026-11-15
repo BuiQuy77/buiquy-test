@@ -205,7 +205,7 @@ export default function Sidebar({
             ) : (
               <LogIn className="w-3.5 h-3.5 text-slate-500" />
             )}
-            <span className="max-w-[70px] truncate">{currentUser?.name || 'Khách'}</span>
+            <span className="max-w-[70px] truncate">{currentUser?.name || 'Khách viếng thăm'}</span>
           </button>
         </div>
 
@@ -347,11 +347,15 @@ export default function Sidebar({
           </div>
 
           {/* User Profile Card */}
-          <div className="p-3 bg-slate-50/90 border-b border-slate-200 space-y-2">
+          <div className="p-3 bg-slate-50/90 border-b border-slate-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
+              <div
+                onClick={() => setIsLoginModalOpen(true)}
+                className="flex items-center gap-2 min-w-0 cursor-pointer group"
+                title="Bấm để đăng nhập hoặc đổi vai trò"
+              >
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 group-hover:scale-105 transition-transform ${
                     isTeacher ? 'bg-emerald-600' : isStudent ? 'bg-blue-600' : 'bg-slate-400'
                   }`}
                 >
@@ -364,8 +368,8 @@ export default function Sidebar({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-900 truncate">
-                    {currentUser?.name || 'Khách trải nghiệm'}
+                  <div className="text-xs font-bold text-slate-900 truncate group-hover:text-teal-800 transition-colors">
+                    {currentUser?.name || 'Khách viếng thăm'}
                   </div>
                   <div className="text-[10px] text-slate-500 flex items-center gap-1">
                     {isTeacher && (
@@ -375,12 +379,12 @@ export default function Sidebar({
                     )}
                     {isStudent && (
                       <span className="px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded font-bold">
-                        Lớp {currentUser.className}
+                        Lớp {currentUser.class || currentUser.className || ''}
                       </span>
                     )}
                     {isGuest && (
                       <span className="px-1.5 py-0.2 bg-slate-200 text-slate-700 rounded font-medium">
-                        Khách dùng thử
+                        Khách viếng thăm
                       </span>
                     )}
                   </div>
@@ -398,21 +402,12 @@ export default function Sidebar({
                 )}
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="px-2 py-1 text-[11px] font-semibold text-teal-700 hover:text-teal-900 hover:bg-slate-200/80 rounded transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-[11px] font-bold text-teal-800 hover:text-teal-950 bg-teal-50 hover:bg-teal-100 border border-teal-200/80 rounded-lg transition-colors cursor-pointer"
                 >
-                  Đổi vai
+                  {isGuest ? 'Đăng nhập' : 'Đổi vai'}
                 </button>
               </div>
             </div>
-            {isGuest && (
-              <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="w-full py-1.5 px-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-lg text-[11px] font-bold text-center transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Đăng nhập 1-Click (Giám khảo)</span>
-              </button>
-            )}
           </div>
 
           {/* Teacher LMS Section */}
