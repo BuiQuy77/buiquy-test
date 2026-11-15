@@ -249,48 +249,62 @@ export default function LessonQuizSection({ lesson }) {
     }
   };
 
+  const prepareTikzDocument = (rawCode) => {
+    let code = rawCode.trim();
+    if (code.includes('\\documentclass') && code.includes('\\begin{document}')) {
+      return code;
+    }
+    let body = code;
+    if (!body.includes('\\begin{tikzpicture}')) {
+      body = `\\begin{tikzpicture}\n${body}\n\\end{tikzpicture}`;
+    }
+    return `\\documentclass[tikz,border=5pt]{standalone}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{amsfonts}
+\\usepackage{pgfplots}
+\\pgfplotsset{compat=newest}
+\\usepackage{tkz-tab}
+\\begin{document}
+${body}
+\\end{document}`;
+  };
+
   const handleCompileTikz = async () => {
     if (!newQTikzCode.trim()) return;
     setIsCompilingTikz(true);
     setAdminNotice('');
     try {
-      const code = newQTikzCode.trim();
-      const preamble = `\\usepackage{tikz}\n\\usepackage{pgfplots}\n\\pgfplotsset{compat=newest}\n\\usepackage{tkz-tab}\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}`;
-      const formula = `\\begin{document}\n${code}\n\\end{document}`;
-      
-      const params = new URLSearchParams();
-      params.append('formula', formula);
-      params.append('fsize', '18px');
-      params.append('fcolor', '000000');
-      params.append('mode', '0');
-      params.append('out', '1');
-      params.append('preamble', preamble);
+      const fullDoc = prepareTikzDocument(newQTikzCode);
 
-      const resp = await fetch('https://quicklatex.com/latex3.f', {
+      const resp = await fetch('https://kroki.io/tikz/svg', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString()
+        headers: {
+          'Content-Type': 'text/plain; charset=UTF-8'
+        },
+        body: fullDoc
       });
 
       if (!resp.ok) {
-        throw new Error('Lỗi kết nối máy chủ QuickLaTeX.');
+        const errText = await resp.text();
+        throw new Error(errText || 'Lỗi biên dịch từ máy chủ TikZ.');
       }
 
-      const text = await resp.text();
-      const lines = text.trim().split('\n');
-      if (lines.length >= 2 && lines[1].trim().startsWith('http')) {
-        const imageUrl = lines[1].trim();
-        setNewQImage(imageUrl);
-        if (!newQImageCaption) {
-          setNewQImageCaption('Hình vẽ đồ thị / Bảng biến thiên (biên dịch từ TikZ)');
-        }
-      } else {
-        throw new Error(text || 'Cú pháp TikZ có lỗi. Vui lòng kiểm tra lại mã LaTeX.');
+      const svgText = await resp.text();
+      if (!svgText.includes('<svg')) {
+        throw new Error('Dữ liệu trả về không phải hình ảnh SVG hợp lệ.');
       }
+
+      const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgText)}`;
+      setNewQImage(svgDataUrl);
+      if (!newQImageCaption) {
+        setNewQImageCaption('Hình vẽ đồ thị / Bảng biến thiên (biên dịch từ TikZ)');
+      }
+      setIsTikzBoxOpen(false);
     } catch (err) {
       console.warn('Lỗi biên dịch TikZ:', err);
       setAdminNotice(
-        'Không thể biên dịch TikZ trực tuyến (mất mạng hoặc cú pháp chưa khớp). Thầy Cô có thể chụp màn hình ảnh vẽ (Win + Shift + S) rồi dán trực tiếp (Ctrl + V) vào ô đề bài!'
+        `Không thể biên dịch mã TikZ: ${err.message || 'Cú pháp LaTeX chưa đúng'}. Thầy Cô cũng có thể dùng nút "Chèn hình ảnh" hoặc chụp ảnh màn hình rồi nhấn Ctrl + V!`
       );
     } finally {
       setIsCompilingTikz(false);
@@ -842,6 +856,32 @@ export default function LessonQuizSection({ lesson }) {
                   </button>
                 </div>
 
+                {/* Các nút mẫu TikZ nhanh */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-purple-800">Chèn nhanh mẫu:</span>
+                  <button
+                    type="button"
+                    onClick={() => setNewQTikzCode(`\\begin{tikzpicture}\n  \\tkzTabInit{$x$ / 1 , $y'$ / 1, $y$ / 2}{$-\\infty$, $-1$, $2$, $+\\infty$}\n  \\tkzTabLine{,+,0,-,0,+,}\n  \\tkzTabVar{-/ $-\\infty$, +/ $3$, -/ $-2$, +/ $+\\infty$}\n\\end{tikzpicture}`)}
+                    className="px-2 py-0.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-900 text-[10px] font-semibold transition cursor-pointer border border-purple-200"
+                  >
+                    📊 Bảng biến thiên (tkz-tab)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewQTikzCode(`\\begin{tikzpicture}\n  \\draw[->] (-1.5,0) -- (3.5,0) node[right] {$x$};\n  \\draw[->] (0,-2) -- (0,4) node[above] {$y$};\n  \\node[below left] at (0,0) {$O$};\n  \\draw[domain=-0.8:2.8, smooth, variable=\\x, blue, thick] plot ({\\x}, {\\x*\\x - 2*\\x});\n  \\draw[dashed] (1,0) -- (1,-1) -- (0,-1);\n  \\node[below] at (1,0) {$1$};\n  \\node[left] at (0,-1) {$-1$};\n  \\fill (1,-1) circle (1.5pt);\n\\end{tikzpicture}`)}
+                    className="px-2 py-0.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-900 text-[10px] font-semibold transition cursor-pointer border border-purple-200"
+                  >
+                    📈 Đồ thị Parabol
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewQTikzCode(`\\begin{tikzpicture}\n  \\draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$};\n  \\draw[->] (0,-3) -- (0,3) node[above] {$y$};\n  \\node[below left] at (0,0) {$O$};\n  \\draw[domain=-2.1:2.1, smooth, variable=\\x, teal, thick] plot ({\\x}, {\\x*\\x*\\x - 3*\\x});\n  \\draw[dashed] (1,0) -- (1,-2) -- (0,-2);\n  \\draw[dashed] (-1,0) -- (-1,2) -- (0,2);\n  \\node[below] at (1,0) {$1$};\n  \\node[above] at (-1,0) {$-1$};\n  \\node[left] at (0,-2) {$-2$};\n  \\node[right] at (0,2) {$2$};\n\\end{tikzpicture}`)}
+                    className="px-2 py-0.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-900 text-[10px] font-semibold transition cursor-pointer border border-purple-200"
+                  >
+                    📈 Đồ thị bậc ba
+                  </button>
+                </div>
+
                 <textarea
                   rows={4}
                   value={newQTikzCode}
@@ -852,7 +892,7 @@ export default function LessonQuizSection({ lesson }) {
 
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[10px] text-purple-700">
-                    Hệ thống sẽ biên dịch mã TikZ này thành hình ảnh và tự động chèn vào câu hỏi.
+                    Hệ thống sẽ biên dịch mã TikZ này thành vector SVG siêu nét và tự động đính kèm vào câu hỏi.
                   </span>
                   <button
                     type="button"
