@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MathView from './MathView';
 import {
   getLessonQuiz,
@@ -19,7 +19,10 @@ import {
   Check,
   X,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon,
+  Code2,
+  Upload
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -44,6 +47,12 @@ export default function LessonQuizSection({ lesson }) {
     { key: 'c', statement: '', correct: true },
     { key: 'd', statement: '', correct: true }
   ]);
+  const [newQImage, setNewQImage] = useState('');
+  const [newQImageCaption, setNewQImageCaption] = useState('');
+  const [newQTikzCode, setNewQTikzCode] = useState('');
+  const [isTikzBoxOpen, setIsTikzBoxOpen] = useState(false);
+  const [isCompilingTikz, setIsCompilingTikz] = useState(false);
+  const imageInputRef = useRef(null);
   const [adminNotice, setAdminNotice] = useState('');
 
   // Nạp câu hỏi khi lesson thay đổi
@@ -163,6 +172,10 @@ export default function LessonQuizSection({ lesson }) {
       { key: 'c', statement: '', correct: true },
       { key: 'd', statement: '', correct: true }
     ]);
+    setNewQImage('');
+    setNewQImageCaption('');
+    setNewQTikzCode('');
+    setIsTikzBoxOpen(false);
     setAdminNotice('');
     setIsAdminOpen(true);
   };
@@ -185,8 +198,103 @@ export default function LessonQuizSection({ lesson }) {
             { key: 'd', statement: '', correct: true }
           ]
     );
+    setNewQImage(q.image || '');
+    setNewQImageCaption(q.imageCaption || '');
+    setNewQTikzCode(q.tikzCode || '');
+    setIsTikzBoxOpen(false);
     setAdminNotice('');
     setIsAdminOpen(true);
+  };
+
+  const handleSelectImageFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setAdminNotice('Vui lòng chọn file hình ảnh (PNG, JPG, SVG, WebP)!');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) {
+        setNewQImage(ev.target.result);
+        if (!newQImageCaption) {
+          setNewQImageCaption(`Hình vẽ: ${file.name.replace(/\.[^/.]+$/, '')}`);
+        }
+        setAdminNotice('');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            if (ev.target?.result) {
+              setNewQImage(ev.target.result);
+              if (!newQImageCaption) {
+                setNewQImageCaption('Hình ảnh minh họa');
+              }
+            }
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleCompileTikz = async () => {
+    if (!newQTikzCode.trim()) return;
+    setIsCompilingTikz(true);
+    setAdminNotice('');
+    try {
+      const code = newQTikzCode.trim();
+      const preamble = `\\usepackage{tikz}\n\\usepackage{pgfplots}\n\\pgfplotsset{compat=newest}\n\\usepackage{tkz-tab}\n\\usepackage{amsmath}\n\\usepackage{amsfonts}\n\\usepackage{amssymb}`;
+      const formula = `\\begin{document}\n${code}\n\\end{document}`;
+      
+      const params = new URLSearchParams();
+      params.append('formula', formula);
+      params.append('fsize', '18px');
+      params.append('fcolor', '000000');
+      params.append('mode', '0');
+      params.append('out', '1');
+      params.append('preamble', preamble);
+
+      const resp = await fetch('https://quicklatex.com/latex3.f', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      });
+
+      if (!resp.ok) {
+        throw new Error('Lỗi kết nối máy chủ QuickLaTeX.');
+      }
+
+      const text = await resp.text();
+      const lines = text.trim().split('\n');
+      if (lines.length >= 2 && lines[1].trim().startsWith('http')) {
+        const imageUrl = lines[1].trim();
+        setNewQImage(imageUrl);
+        if (!newQImageCaption) {
+          setNewQImageCaption('Hình vẽ đồ thị / Bảng biến thiên (biên dịch từ TikZ)');
+        }
+      } else {
+        throw new Error(text || 'Cú pháp TikZ có lỗi. Vui lòng kiểm tra lại mã LaTeX.');
+      }
+    } catch (err) {
+      console.warn('Lỗi biên dịch TikZ:', err);
+      setAdminNotice(
+        'Không thể biên dịch TikZ trực tuyến (mất mạng hoặc cú pháp chưa khớp). Thầy Cô có thể chụp màn hình ảnh vẽ (Win + Shift + S) rồi dán trực tiếp (Ctrl + V) vào ô đề bài!'
+      );
+    } finally {
+      setIsCompilingTikz(false);
+    }
   };
 
   const handleSaveQuestion = () => {
@@ -209,7 +317,10 @@ export default function LessonQuizSection({ lesson }) {
         question: newQText.trim(),
         options: newQOptions.map((o) => o.trim()),
         correctIndex: newQCorrectIdx,
-        explanation: newQExplanation.trim()
+        explanation: newQExplanation.trim(),
+        image: newQImage || null,
+        imageCaption: newQImageCaption.trim() || null,
+        tikzCode: newQTikzCode.trim() || null
       };
     } else if (newQType === 'tf') {
       if (newQTfItems.some((it) => !it.statement.trim())) {
@@ -221,7 +332,10 @@ export default function LessonQuizSection({ lesson }) {
         type: 'tf',
         question: newQText.trim(),
         items: newQTfItems.map((it) => ({ ...it, statement: it.statement.trim() })),
-        explanation: newQExplanation.trim()
+        explanation: newQExplanation.trim(),
+        image: newQImage || null,
+        imageCaption: newQImageCaption.trim() || null,
+        tikzCode: newQTikzCode.trim() || null
       };
     } else if (newQType === 'short') {
       if (!newQShortAnswer.trim()) {
@@ -233,7 +347,10 @@ export default function LessonQuizSection({ lesson }) {
         type: 'short',
         question: newQText.trim(),
         correctAnswer: newQShortAnswer.trim(),
-        explanation: newQExplanation.trim()
+        explanation: newQExplanation.trim(),
+        image: newQImage || null,
+        imageCaption: newQImageCaption.trim() || null,
+        tikzCode: newQTikzCode.trim() || null
       };
     }
 
@@ -405,6 +522,24 @@ export default function LessonQuizSection({ lesson }) {
                 <MathView math={q.question} />
               </div>
 
+              {/* Hình ảnh đính kèm (Đồ thị / Bảng biến thiên) */}
+              {q.image && (
+                <div className="my-3 flex flex-col items-center justify-center p-3 bg-slate-50/90 rounded-2xl border border-slate-200/90 max-w-xl mx-auto">
+                  <img
+                    src={q.image}
+                    alt={q.imageCaption || 'Hình vẽ câu hỏi'}
+                    className="max-h-64 object-contain rounded-xl shadow-xs cursor-zoom-in hover:opacity-95 transition-opacity"
+                    onClick={() => window.open(q.image, '_blank')}
+                    title="Bấm để xem ảnh phóng to trong tab mới"
+                  />
+                  {q.imageCaption && (
+                    <span className="text-[11px] text-slate-500 font-semibold italic mt-2 text-center">
+                      {q.imageCaption}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* PHẦN 1: TRẮC NGHIỆM 4 LỰA CHỌN */}
               {q.type === 'mcq' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
@@ -561,7 +696,7 @@ export default function LessonQuizSection({ lesson }) {
       {/* Nút hành động chấm điểm */}
       <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
         <div className="text-xs text-slate-500">
-          * Đề thi tự động chấm điểm và hiển thị giải thích chi tiết có công thức Toán học KaTeX.
+          * Đề thi tự động chấm điểm và hiển thị giải thích chi tiết có công thức Toán học LaTeX.
         </div>
 
         {!isGraded ? (
@@ -614,7 +749,7 @@ export default function LessonQuizSection({ lesson }) {
             {/* Chọn dạng câu hỏi */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Dạng câu hỏi (Chuẩn thi TN THPT 2025):
+                Dạng câu hỏi (Chuẩn thi TN THPT 2026):
               </label>
               <div className="flex gap-2">
                 {[
@@ -638,19 +773,147 @@ export default function LessonQuizSection({ lesson }) {
               </div>
             </div>
 
-            {/* Nội dung đề bài */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Nội dung câu hỏi (hỗ trợ công thức KaTeX trong $...$ hoặc $$...$$):
-              </label>
+            {/* Nội dung đề bài & Thanh công cụ Chèn Ảnh / TikZ */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  Nội dung câu hỏi (hỗ trợ công thức LaTeX trong $...$ hoặc $$...$$):
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={imageInputRef}
+                    onChange={handleSelectImageFile}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    title="Tải ảnh đồ thị, bảng biến thiên từ máy tính hoặc dán trực tiếp Ctrl+V"
+                  >
+                    <ImageIcon className="w-3.5 h-3.5 text-teal-700" />
+                    <span>{newQImage ? 'Đổi ảnh khác' : 'Chèn hình ảnh'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsTikzBoxOpen(!isTikzBoxOpen)}
+                    className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
+                      isTikzBoxOpen
+                        ? 'bg-purple-100 text-purple-900 border-purple-300'
+                        : 'bg-purple-50 hover:bg-purple-100 text-purple-800 border-purple-200'
+                    }`}
+                    title="Biên dịch mã TikZ LaTeX sang hình ảnh đồ thị / bảng biến thiên"
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-purple-700" />
+                    <span>Mã TikZ LaTeX</span>
+                  </button>
+                </div>
+              </div>
+
               <textarea
                 rows={3}
                 value={newQText}
                 onChange={(e) => setNewQText(e.target.value)}
-                placeholder="Ví dụ: Cho hàm số $y = f(x)$ có đạo hàm $f'(x) = 3x^2 - 6x$..."
+                onPaste={handlePaste}
+                placeholder="Ví dụ: Cho hàm số $y = f(x)$ có bảng biến thiên (hoặc đồ thị) như hình bên dưới..."
                 className="w-full p-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#005a54]"
               />
+              <p className="text-[10px] text-slate-400">
+                💡 Mẹo nhanh: Thầy Cô có thể chụp màn hình bảng biến thiên / đồ thị (Win + Shift + S) rồi dán trực tiếp (Ctrl + V) vào ô đề bài để chèn ảnh ngay!
+              </p>
             </div>
+
+            {/* Khung biên dịch mã TikZ LaTeX (khi mở) */}
+            {isTikzBoxOpen && (
+              <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-200 space-y-2.5 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-purple-900 text-xs flex items-center gap-1.5">
+                    <Code2 className="w-4 h-4 text-purple-700" />
+                    Biên Dịch Mã TikZ LaTeX (tikzpicture / tkz-tab)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsTikzBoxOpen(false)}
+                    className="text-purple-600 hover:text-purple-800 text-[11px] font-semibold cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
+
+                <textarea
+                  rows={4}
+                  value={newQTikzCode}
+                  onChange={(e) => setNewQTikzCode(e.target.value)}
+                  placeholder="\begin{tikzpicture}&#10;  \draw[->] (-2,0) -- (2,0) node[right] {$x$};&#10;  \draw[->] (0,-2) -- (0,2) node[above] {$y$};&#10;  \draw[thick, blue] (-1.5,-1) parabola (0,1.5) parabola (1.5,-1);&#10;\end{tikzpicture}"
+                  className="w-full p-2.5 rounded-xl border border-purple-200 bg-white font-mono text-[11px] text-slate-800 focus:outline-none focus:border-purple-600"
+                />
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[10px] text-purple-700">
+                    Hệ thống sẽ biên dịch mã TikZ này thành hình ảnh và tự động chèn vào câu hỏi.
+                  </span>
+                  <button
+                    type="button"
+                    disabled={isCompilingTikz || !newQTikzCode.trim()}
+                    onClick={handleCompileTikz}
+                    className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{isCompilingTikz ? 'Đang Biên Dịch...' : 'Biên Dịch TikZ Ra Ảnh'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Khung xem trước & Chú thích Hình Ảnh (khi có ảnh) */}
+            {newQImage && (
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-teal-700" />
+                    Hình ảnh đính kèm (Đồ thị / Bảng biến thiên):
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewQImage('');
+                      setNewQImageCaption('');
+                    }}
+                    className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Xóa ảnh</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="p-2 bg-white rounded-xl border border-slate-200 shrink-0">
+                    <img
+                      src={newQImage}
+                      alt="Xem trước"
+                      className="max-h-28 max-w-[200px] object-contain rounded-lg"
+                    />
+                  </div>
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      Chú thích hình ảnh (tùy chọn):
+                    </label>
+                    <input
+                      type="text"
+                      value={newQImageCaption}
+                      onChange={(e) => setNewQImageCaption(e.target.value)}
+                      placeholder="Ví dụ: Hình 1: Bảng biến thiên của hàm số f(x)"
+                      className="w-full px-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#005a54]"
+                    />
+                    <p className="text-[10px] text-slate-400">
+                      Hình ảnh này sẽ được hiển thị ngay bên dưới nội dung đề bài cho học sinh xem.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Form cho MCQ */}
             {newQType === 'mcq' && (

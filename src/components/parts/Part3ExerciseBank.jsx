@@ -518,7 +518,7 @@ export default function Part3ExerciseBank() {
           <div className="p-4 bg-teal-50/70 border border-teal-200/80 rounded-2xl flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-700 leading-relaxed">
-              <strong>Hướng dẫn luyện tập:</strong> Chọn đáp án bạn cho là đúng. Hệ thống sẽ ngay lập tức đối soát kết quả và hiển thị <strong>phân tích lời giải chi tiết bằng công thức toán học KaTeX</strong> chuẩn SGK Toán 12 Kết nối tri thức.
+              <strong>Hướng dẫn luyện tập:</strong> Chọn đáp án bạn cho là đúng. Hệ thống sẽ ngay lập tức đối soát kết quả và hiển thị <strong>phân tích lời giải chi tiết bằng công thức toán học LaTeX</strong> chuẩn SGK Toán 12 Kết nối tri thức.
             </div>
           </div>
 
