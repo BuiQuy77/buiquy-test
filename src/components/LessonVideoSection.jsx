@@ -256,10 +256,15 @@ export default function LessonVideoSection({ lesson }) {
       ? slideData?.exerciseUrl
       : null;
 
-  const grade = String(
-    lesson?.grade ||
-    (lesson?.id?.startsWith('toan11') || lesson?.id?.includes('-11-') ? '11' : lesson?.id?.startsWith('toan12') || lesson?.id?.includes('-12-') ? '12' : '10')
-  );
+  const getGrade = () => {
+    if (lesson?.grade === 11 || lesson?.grade === '11' || lesson?.id?.includes('toan11') || lesson?.id?.includes('-11-')) return '11';
+    if (lesson?.grade === 12 || lesson?.grade === '12' || lesson?.id?.includes('toan12') || lesson?.id?.includes('-12-')) return '12';
+    if (lesson?.grade === 10 || lesson?.grade === '10' || lesson?.id?.includes('toan10') || lesson?.id?.includes('-10-')) return '10';
+    if (lesson?.sourceFile?.includes('11') || lesson?.book?.includes('11')) return '11';
+    if (lesson?.sourceFile?.includes('12') || lesson?.book?.includes('12')) return '12';
+    return '10';
+  };
+  const grade = getGrade();
   const slideRepoUrl = `https://buiquy77.github.io/toan${grade}-slides/`;
   const slideRepoLabel = `Cổng Slide Toán ${grade}`;
 
