@@ -558,6 +558,26 @@ export const DEFAULT_LESSON_SLIDES = {
     exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai13_BaiTap_Slide.html',
     title: 'Các Số Đặc Trưng Đo Xu Thế Trung Tâm',
     author: 'Thầy Bùi Quý'
+  },
+
+  // TOÁN 12 - HÌNH HỌC KHÔNG GIAN & HỆ TRỤC TỌA ĐỘ OXYZ
+  'toan12-bai-6': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai06_VectoTrongKhongGian_Slide.html',
+    exerciseUrl: null,
+    title: 'Vectơ Trong Không Gian',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-7': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/ly_thuyet_presentation.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/bai_tap_presentation.html',
+    title: 'Hệ Trục Tọa Độ Trong Không Gian',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-8': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai07_ToaDoKhongGian_Phan2_Slide.html',
+    exerciseUrl: null,
+    title: 'Biểu Thức Tọa Độ Của Các Phép Toán Vectơ',
+    author: 'Thầy Bùi Quý'
   }
 };
 
