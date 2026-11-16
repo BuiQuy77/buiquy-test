@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MathView from './MathView';
 import {
   getLessonVideo,
   saveCustomLessonVideo,
-  resetLessonVideo
+  resetLessonVideo,
+  getLessonSlide,
+  saveCustomLessonSlide,
+  resetLessonSlide
 } from '../data/lessonMediaData';
 import {
   Play,
@@ -20,12 +23,22 @@ import {
   RotateCcw,
   Film,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Maximize2,
+  Presentation,
+  Monitor,
+  Layers,
+  Globe
 } from 'lucide-react';
 
 export default function LessonVideoSection({ lesson }) {
   const [videoData, setVideoData] = useState(null);
+  const [slideData, setSlideData] = useState(null);
+  const [activeMediaTab, setActiveMediaTab] = useState('theory'); // 'theory' | 'exercise' | 'video'
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  // Fullscreen container ref
+  const slideContainerRef = useRef(null);
 
   // AI Visual Slideshow state (Dành cho chế độ Chương trình tự tạo tóm tắt hoạt họa)
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -37,17 +50,29 @@ export default function LessonVideoSection({ lesson }) {
   const [adminAuthor, setAdminAuthor] = useState('');
   const [adminDuration, setAdminDuration] = useState('');
   const [adminNotesText, setAdminNotesText] = useState('');
+  const [adminTheoryUrl, setAdminTheoryUrl] = useState('');
+  const [adminExerciseUrl, setAdminExerciseUrl] = useState('');
   const [adminNotice, setAdminNotice] = useState('');
 
   useEffect(() => {
     if (!lesson) return;
-    const loaded = getLessonVideo(lesson.id, lesson);
-    setVideoData(loaded);
+    const loadedVideo = getLessonVideo(lesson.id, lesson);
+    const loadedSlide = getLessonSlide(lesson.id, lesson);
+    setVideoData(loadedVideo);
+    setSlideData(loadedSlide);
+
+    // Mặc định ưu tiên mở Slide Lý thuyết nếu bài có sẵn Slide Manim, ngược lại mở Video
+    if (loadedSlide?.theoryUrl) {
+      setActiveMediaTab('theory');
+    } else {
+      setActiveMediaTab('video');
+    }
+
     setCurrentSlide(0);
     setIsAutoPlaying(false);
   }, [lesson]);
 
-  // Slideshow timer
+  // Slideshow timer cho AI Visual Slideshow
   useEffect(() => {
     let timer;
     if (isAutoPlaying) {
@@ -65,6 +90,8 @@ export default function LessonVideoSection({ lesson }) {
     setAdminAuthor(videoData.author || '');
     setAdminDuration(videoData.duration || '10:00');
     setAdminNotesText((videoData.summaryNotes || []).join('\n'));
+    setAdminTheoryUrl(slideData?.theoryUrl || '');
+    setAdminExerciseUrl(slideData?.exerciseUrl || '');
     setAdminNotice('');
     setIsAdminOpen(true);
   };
@@ -89,14 +116,14 @@ export default function LessonVideoSection({ lesson }) {
     return trimmed;
   };
 
-  const handleSaveVideo = () => {
+  const handleSaveMedia = () => {
     const parsedEmbed = parseYoutubeEmbedUrl(adminUrl);
     const notes = adminNotesText
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const updated = {
+    const updatedVideo = {
       ...videoData,
       title: adminTitle.trim() || videoData.title,
       author: adminAuthor.trim() || videoData.author,
@@ -105,17 +132,44 @@ export default function LessonVideoSection({ lesson }) {
       summaryNotes: notes.length > 0 ? notes : videoData.summaryNotes
     };
 
-    setVideoData(updated);
-    saveCustomLessonVideo(lesson.id, updated);
+    const updatedSlide = {
+      ...slideData,
+      theoryUrl: adminTheoryUrl.trim() || null,
+      exerciseUrl: adminExerciseUrl.trim() || null,
+      title: lesson?.title || 'Bài giảng Manim Slides'
+    };
+
+    setVideoData(updatedVideo);
+    setSlideData(updatedSlide);
+
+    saveCustomLessonVideo(lesson.id, updatedVideo);
+    saveCustomLessonSlide(lesson.id, updatedSlide);
+
     setIsAdminOpen(false);
   };
 
-  const handleResetVideo = () => {
-    if (window.confirm('Khôi phục video tóm tắt mặc định của hệ thống cho bài học này?')) {
+  const handleResetMedia = () => {
+    if (window.confirm('Khôi phục video và slide mặc định của hệ thống cho bài học này?')) {
       resetLessonVideo(lesson.id);
-      const def = getLessonVideo(lesson.id, lesson);
-      setVideoData(def);
+      resetLessonSlide(lesson.id);
+      const defVideo = getLessonVideo(lesson.id, lesson);
+      const defSlide = getLessonSlide(lesson.id, lesson);
+      setVideoData(defVideo);
+      setSlideData(defSlide);
       setIsAdminOpen(false);
+    }
+  };
+
+  const handleToggleFullscreen = () => {
+    if (!slideContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      slideContainerRef.current.requestFullscreen().catch((err) => {
+        console.warn('Fullscreen error:', err);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
     }
   };
 
@@ -195,120 +249,282 @@ export default function LessonVideoSection({ lesson }) {
     }
   ];
 
+  const currentSlideUrl =
+    activeMediaTab === 'theory'
+      ? slideData?.theoryUrl
+      : activeMediaTab === 'exercise'
+      ? slideData?.exerciseUrl
+      : null;
+
   return (
     <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-5">
-      {/* Header khu vực Video Tóm Tắt */}
+      {/* Header khu vực Video & Trình Chiếu Manim */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100">
-            <Film className="w-5 h-5" />
+          <div className="p-2 bg-teal-50 text-[#005a54] rounded-xl border border-teal-100">
+            <Presentation className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
-              Video Tóm Tắt Bài Học & Trọng Tâm Kiến Thức
+              Bài Giảng Trình Chiếu Manim & Video Tóm Tắt
             </h2>
             <p className="text-xs text-slate-500">
-              {videoData.embedUrl ? 'Video bài giảng trực quan & Mốc thời gian (Timestamps)' : 'Chương trình AI Tự Tạo: Trình Chiếu Tóm Tắt Trực Quan'}
+              Kết hợp Hoạt họa Toán học tương tác cao (Manim Slides) và Video bài giảng trực quan
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <a
+            href="https://buiquy77.github.io/toan10-slides/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 text-[#005a54] text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs"
+            title="Mở cổng toàn bộ 15 bản trình chiếu Toán 10 trên GitHub Pages"
+          >
+            <Globe className="w-3.5 h-3.5 text-teal-600" />
+            <span className="hidden sm:inline">Cổng Slide Toán 10</span>
+          </a>
+
           <button
             onClick={handleOpenAdmin}
             className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
             <Settings className="w-3.5 h-3.5 text-teal-300" />
-            <span>Đổi Video / Quản trị (Admin)</span>
+            <span>Đổi Video / Slide (Admin)</span>
           </button>
         </div>
       </div>
 
-      {/* KHUNG PHÁT VIDEO / TRÌNH DIỄN TRỰC QUAN */}
+      {/* THANH CHUYỂN ĐỔI CHẾ ĐỘ: SLIDE LÝ THUYẾT / SLIDE BÀI TẬP / VIDEO YOUTUBE */}
+      <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* Tab 1: Slide Lý Thuyết */}
+          <button
+            onClick={() => setActiveMediaTab('theory')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+              activeMediaTab === 'theory'
+                ? 'bg-[#005a54] text-white shadow-xs'
+                : 'text-slate-700 hover:bg-white/80'
+            }`}
+          >
+            <Monitor className="w-3.5 h-3.5" />
+            <span>📊 Slide Lý Thuyết (Manim)</span>
+            {slideData?.theoryUrl ? (
+              <span className="w-2 h-2 rounded-full bg-emerald-400" title="Có sẵn bài trình chiếu" />
+            ) : (
+              <span className="text-[10px] opacity-60">(Chưa có)</span>
+            )}
+          </button>
+
+          {/* Tab 2: Slide Bài Tập */}
+          <button
+            onClick={() => setActiveMediaTab('exercise')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+              activeMediaTab === 'exercise'
+                ? 'bg-[#005a54] text-white shadow-xs'
+                : 'text-slate-700 hover:bg-white/80'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>📝 Slide Bài Tập (Manim)</span>
+            {slideData?.exerciseUrl ? (
+              <span className="w-2 h-2 rounded-full bg-emerald-400" title="Có sẵn bài trình chiếu" />
+            ) : (
+              <span className="text-[10px] opacity-60">(Chưa có)</span>
+            )}
+          </button>
+
+          {/* Tab 3: Video YouTube */}
+          <button
+            onClick={() => setActiveMediaTab('video')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+              activeMediaTab === 'video'
+                ? 'bg-[#005a54] text-white shadow-xs'
+                : 'text-slate-700 hover:bg-white/80'
+            }`}
+          >
+            <Film className="w-3.5 h-3.5" />
+            <span>🎬 Video Tóm Tắt (YouTube / AI)</span>
+          </button>
+        </div>
+
+        {/* Nút hành động nhanh cho Slide */}
+        {(activeMediaTab === 'theory' || activeMediaTab === 'exercise') && currentSlideUrl && (
+          <div className="flex items-center gap-1.5 px-1">
+            <button
+              onClick={handleToggleFullscreen}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-teal-400 text-slate-800 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+              title="Phóng to toàn màn hình máy chiếu / máy tính"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-[#005a54]" />
+              <span>Toàn màn hình</span>
+            </button>
+            <a
+              href={currentSlideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-teal-400 text-slate-800 text-[11px] font-bold flex items-center gap-1 transition-all shadow-2xs"
+              title="Mở tab mới độc lập"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+              <span>Tab mới</span>
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* KHUNG HIỂN THỊ CHÍNH (SLIDE HOẶC VIDEO) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* CỘT TRÁI (7/12): Khung Video (Iframe YouTube hoặc AI Slideshow) */}
+        {/* CỘT TRÁI (7/12): Khung Trình chiếu Slide hoặc Video */}
         <div className="lg:col-span-7 space-y-3">
-          {videoData.embedUrl ? (
-            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md">
-              <iframe
-                src={videoData.embedUrl}
-                title={videoData.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full border-0"
-              />
-            </div>
-          ) : (
-            /* AI VISUAL SLIDESHOW SUMMARY (Chương trình tự tạo) */
-            <div className="w-full rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 text-white shadow-md flex flex-col justify-between min-h-[340px]">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping" />
-                    <span className="text-xs font-extrabold text-teal-300 uppercase tracking-wider">
-                      {slides[currentSlide].title}
-                    </span>
+          {/* HIỂN THỊ SLIDE MANIM (LÝ THUYẾT HOẶC BÀI TẬP) */}
+          {(activeMediaTab === 'theory' || activeMediaTab === 'exercise') && (
+            <div
+              ref={slideContainerRef}
+              className="relative w-full aspect-video min-h-[360px] sm:min-h-[420px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md flex flex-col"
+            >
+              {currentSlideUrl ? (
+                <iframe
+                  src={currentSlideUrl}
+                  title={`${lesson?.title || 'Bài học'} - ${activeMediaTab === 'theory' ? 'Slide Lý Thuyết' : 'Slide Bài Tập'}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  className="w-full h-full border-0 flex-1"
+                />
+              ) : (
+                /* Thông báo khi bài học chưa có Slide */
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-white space-y-3 bg-gradient-to-br from-slate-900 to-slate-950">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-300">
+                    <Presentation className="w-6 h-6" />
                   </div>
-                  <span className="text-xs font-mono text-slate-400">
-                    Trang {currentSlide + 1} / {slides.length}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-300 font-medium">
-                  {slides[currentSlide].desc}
-                </p>
-
-                <div className="pt-2 text-slate-900">
-                  {slides[currentSlide].content}
-                </div>
-              </div>
-
-              {/* Điều khiển Slideshow */}
-              <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setCurrentSlide((s) => (s > 0 ? s - 1 : slides.length - 1))}
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
-                    title="Slide trước"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                    className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                    <span>{isAutoPlaying ? 'Tạm dừng' : 'Tự động chạy'}</span>
-                  </button>
-                  <button
-                    onClick={() => setCurrentSlide((s) => (s < slides.length - 1 ? s + 1 : 0))}
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
-                    title="Slide sau"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {slides.map((_, idx) => (
+                  <div className="space-y-1 max-w-md">
+                    <h4 className="text-sm font-bold text-white">
+                      Bài học này chưa có bản trình chiếu Manim {activeMediaTab === 'theory' ? 'Lý Thuyết' : 'Bài Tập'}
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Thầy Cô có thể bấm nút <strong>"Đổi Video / Slide (Admin)"</strong> ở góc phải trên để dán đường link slide mới, hoặc bấm vào tab <strong>"Video Tóm Tắt"</strong> để xem video bài giảng!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2">
                     <button
-                      key={idx}
-                      onClick={() => setCurrentSlide(idx)}
-                      className={`h-2 rounded-full transition-all cursor-pointer ${
-                        currentSlide === idx ? 'w-6 bg-teal-400' : 'w-2 bg-slate-700'
-                      }`}
-                    />
-                  ))}
+                      onClick={() => setActiveMediaTab('video')}
+                      className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition cursor-pointer"
+                    >
+                      Xem Video Bài Giảng
+                    </button>
+                    <a
+                      href="https://buiquy77.github.io/toan10-slides/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
+                    >
+                      <Globe className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Xem Kho Slide Toán 10</span>
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
+          {/* HIỂN THỊ VIDEO YOUTUBE HOẶC AI SLIDESHOW */}
+          {activeMediaTab === 'video' && (
+            <>
+              {videoData.embedUrl ? (
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md">
+                  <iframe
+                    src={videoData.embedUrl}
+                    title={videoData.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                  />
+                </div>
+              ) : (
+                /* AI VISUAL SLIDESHOW SUMMARY (Chương trình tự tạo) */
+                <div className="w-full rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 text-white shadow-md flex flex-col justify-between min-h-[340px]">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping" />
+                        <span className="text-xs font-extrabold text-teal-300 uppercase tracking-wider">
+                          {slides[currentSlide].title}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono text-slate-400">
+                        Trang {currentSlide + 1} / {slides.length}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-300 font-medium">
+                      {slides[currentSlide].desc}
+                    </p>
+
+                    <div className="pt-2 text-slate-900">
+                      {slides[currentSlide].content}
+                    </div>
+                  </div>
+
+                  {/* Điều khiển Slideshow */}
+                  <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setCurrentSlide((s) => (s > 0 ? s - 1 : slides.length - 1))}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
+                        title="Slide trước"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                        className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        <span>{isAutoPlaying ? 'Tạm dừng' : 'Tự động chạy'}</span>
+                      </button>
+                      <button
+                        onClick={() => setCurrentSlide((s) => (s < slides.length - 1 ? s + 1 : 0))}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
+                        title="Slide sau"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {slides.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentSlide(idx)}
+                          className={`h-2 rounded-full transition-all cursor-pointer ${
+                            currentSlide === idx ? 'w-6 bg-teal-400' : 'w-2 bg-slate-700'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Thanh thông tin dưới khung Media */}
           <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 px-1">
-            <span className="font-bold text-slate-800">{videoData.title}</span>
+            <span className="font-bold text-slate-800">
+              {activeMediaTab === 'theory'
+                ? `📊 Slide Lý Thuyết: ${slideData?.title || lesson?.title}`
+                : activeMediaTab === 'exercise'
+                ? `📝 Slide Bài Tập: ${slideData?.title || lesson?.title}`
+                : videoData.title}
+            </span>
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              <span>Thời lượng: {videoData.duration} • Nguồn: {videoData.author}</span>
+              <span>
+                {activeMediaTab === 'video'
+                  ? `Thời lượng: ${videoData.duration} • Nguồn: ${videoData.author}`
+                  : `Tác giả: Thầy Bùi Quý • Động cơ Manim Slides`}
+              </span>
             </span>
           </div>
         </div>
@@ -331,8 +547,8 @@ export default function LessonVideoSection({ lesson }) {
             </ul>
           </div>
 
-          {/* Mốc thời gian (Chapters) */}
-          {videoData.chapters && videoData.chapters.length > 0 && (
+          {/* Mốc thời gian (Chapters) nếu có */}
+          {videoData.chapters && videoData.chapters.length > 0 && activeMediaTab === 'video' && (
             <div className="p-4 rounded-xl bg-teal-50/40 border border-teal-200/80 space-y-2.5">
               <div className="text-xs font-extrabold text-[#005a54] uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -353,20 +569,35 @@ export default function LessonVideoSection({ lesson }) {
               </div>
             </div>
           )}
+
+          {/* Hướng dẫn phím tắt khi trình chiếu Manim */}
+          {(activeMediaTab === 'theory' || activeMediaTab === 'exercise') && (
+            <div className="p-4 rounded-xl bg-teal-50/50 border border-teal-200/80 space-y-2 text-xs text-slate-700">
+              <div className="font-bold text-[#005a54] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-teal-600" />
+                <span>Mẹo Thầy Cô Giảng Bài Bằng Manim Slides:</span>
+              </div>
+              <ul className="space-y-1.5 leading-relaxed text-[11px]">
+                <li>• Bấm nút <strong>"Tiếp tục ▶"</strong> (hoặc phím mũi tên <kbd className="px-1.5 py-0.5 bg-white border rounded text-[10px]">➡️</kbd>) để chuyển từng bước hoạt họa.</li>
+                <li>• Bật nút <strong>"▶ Tự động"</strong> để bài trình chiếu tự động chiếu nối tiếp như một video bài giảng.</li>
+                <li>• Bấm <strong>"Toàn màn hình"</strong> để phóng to hết cỡ khi chiếu lên Tivi hoặc Máy chiếu lớp học.</li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* MODAL CẤU HÌNH / THAY ĐỔI VIDEO DÀNH CHO ADMIN & GIÁO VIÊN */}
+      {/* MODAL CẤU HÌNH / THAY ĐỔI VIDEO & SLIDE DÀNH CHO ADMIN & GIÁO VIÊN */}
       {isAdminOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
-                  <Video className="w-4 h-4" />
+                <div className="p-2 bg-teal-50 text-[#005a54] rounded-lg">
+                  <Settings className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  Quản Trị Video Tóm Tắt Bài Học
+                  Cấu Hình Video & Slide Bài Giảng
                 </h3>
               </div>
               <button
@@ -377,7 +608,42 @@ export default function LessonVideoSection({ lesson }) {
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
+              {/* Cấu hình Slide Manim */}
+              <div className="p-3 bg-teal-50/60 rounded-xl border border-teal-200/80 space-y-2.5">
+                <div className="text-xs font-bold text-[#005a54] flex items-center gap-1.5">
+                  <Presentation className="w-4 h-4" />
+                  <span>Cấu hình Bài trình chiếu Manim (GitHub Pages / Link Web):</span>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Link Slide Lý Thuyết:
+                  </label>
+                  <input
+                    type="text"
+                    value={adminTheoryUrl}
+                    onChange={(e) => setAdminTheoryUrl(e.target.value)}
+                    placeholder="Ví dụ: https://buiquy77.github.io/toan10-slides/Bai01_MenhDe_Slide.html"
+                    className="w-full p-2 rounded-lg border border-teal-200 text-xs bg-white focus:outline-none focus:border-[#005a54]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Link Slide Bài Tập:
+                  </label>
+                  <input
+                    type="text"
+                    value={adminExerciseUrl}
+                    onChange={(e) => setAdminExerciseUrl(e.target.value)}
+                    placeholder="Ví dụ: https://buiquy77.github.io/toan10-slides/Bai01_BaiTap_Slide.html"
+                    className="w-full p-2 rounded-lg border border-teal-200 text-xs bg-white focus:outline-none focus:border-[#005a54]"
+                  />
+                </div>
+              </div>
+
+              {/* Cấu hình Video YouTube */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Đường dẫn Video YouTube (hoặc MP4):
@@ -437,7 +703,7 @@ export default function LessonVideoSection({ lesson }) {
                   Ghi chú tóm tắt (mỗi dòng là một ý gạch đầu dòng):
                 </label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={adminNotesText}
                   onChange={(e) => setAdminNotesText(e.target.value)}
                   placeholder="Nhập các ý trọng tâm cần ghi nhớ..."
@@ -449,7 +715,7 @@ export default function LessonVideoSection({ lesson }) {
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <button
                 type="button"
-                onClick={handleResetVideo}
+                onClick={handleResetMedia}
                 className="text-xs font-bold text-slate-500 hover:text-rose-600 cursor-pointer"
               >
                 Khôi phục mặc định
@@ -465,7 +731,7 @@ export default function LessonVideoSection({ lesson }) {
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveVideo}
+                  onClick={handleSaveMedia}
                   className="px-5 py-2 rounded-xl bg-[#005a54] hover:bg-[#004742] text-white text-xs font-bold shadow-sm cursor-pointer"
                 >
                   Lưu thay đổi

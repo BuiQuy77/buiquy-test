@@ -514,3 +514,102 @@ export function resetLessonVideo(lessonId) {
     return false;
   }
 }
+
+// 5. Danh mục Bài Trình Chiếu Manim Slides (Toán 10, 11, 12)
+export const DEFAULT_LESSON_SLIDES = {
+  'toan10-bai-1': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai01_MenhDe_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai01_BaiTap_Slide.html',
+    title: 'Mệnh Đề Toán Học',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-2': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai02_TapHop_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai02_BaiTap_Slide.html',
+    title: 'Tập Hợp & Các Phép Toán',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-9': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai09_TichVecto_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai09_BaiTap_Slide.html',
+    title: 'Tích Của Vectơ Với Một Số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-10': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai10_VectoToaDo_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai10_BaiTap_Slide.html',
+    title: 'Vectơ Trong Mặt Phẳng Tọa Độ',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-11': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai11_TichVoHuong_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai11_BaiTap_Slide.html',
+    title: 'Tích Vô Hướng Của Hai Vectơ',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-12': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai12_SoGanDung_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai12_BaiTap_Slide.html',
+    title: 'Số Gần Đúng & Sai Số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan10-bai-13': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai13_XuTheTrungTam_Slide.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai13_BaiTap_Slide.html',
+    title: 'Các Số Đặc Trưng Đo Xu Thế Trung Tâm',
+    author: 'Thầy Bùi Quý'
+  }
+};
+
+export function getLessonSlide(lessonId, lessonObj) {
+  try {
+    const savedSlides = localStorage.getItem('mathverse_custom_slides_v1');
+    if (savedSlides) {
+      const parsed = JSON.parse(savedSlides);
+      if (parsed[lessonId]) {
+        return parsed[lessonId];
+      }
+    }
+  } catch (e) {
+    console.error('Lỗi đọc custom slide từ localStorage:', e);
+  }
+
+  if (DEFAULT_LESSON_SLIDES[lessonId]) {
+    return DEFAULT_LESSON_SLIDES[lessonId];
+  }
+
+  return {
+    theoryUrl: null,
+    exerciseUrl: null,
+    title: lessonObj?.title || 'Bài giảng Manim Slides',
+    author: 'Thầy Bùi Quý'
+  };
+}
+
+export function saveCustomLessonSlide(lessonId, slideData) {
+  try {
+    const savedSlides = localStorage.getItem('mathverse_custom_slides_v1');
+    const parsed = savedSlides ? JSON.parse(savedSlides) : {};
+    parsed[lessonId] = slideData;
+    localStorage.setItem('mathverse_custom_slides_v1', JSON.stringify(parsed));
+    return true;
+  } catch (e) {
+    console.error('Lỗi lưu custom slide:', e);
+    return false;
+  }
+}
+
+export function resetLessonSlide(lessonId) {
+  try {
+    const savedSlides = localStorage.getItem('mathverse_custom_slides_v1');
+    if (savedSlides) {
+      const parsed = JSON.parse(savedSlides);
+      delete parsed[lessonId];
+      localStorage.setItem('mathverse_custom_slides_v1', JSON.stringify(parsed));
+    }
+    return true;
+  } catch (e) {
+    console.error('Lỗi reset slide:', e);
+    return false;
+  }
+}
