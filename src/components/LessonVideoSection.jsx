@@ -256,6 +256,13 @@ export default function LessonVideoSection({ lesson }) {
       ? slideData?.exerciseUrl
       : null;
 
+  const grade = String(
+    lesson?.grade ||
+    (lesson?.id?.startsWith('toan11') || lesson?.id?.includes('-11-') ? '11' : lesson?.id?.startsWith('toan12') || lesson?.id?.includes('-12-') ? '12' : '10')
+  );
+  const slideRepoUrl = `https://buiquy77.github.io/toan${grade}-slides/`;
+  const slideRepoLabel = `Cổng Slide Toán ${grade}`;
+
   return (
     <section className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-5">
       {/* Header khu vực Video & Trình Chiếu Manim */}
@@ -276,14 +283,14 @@ export default function LessonVideoSection({ lesson }) {
 
         <div className="flex items-center gap-2">
           <a
-            href="https://buiquy77.github.io/toan10-slides/"
+            href={slideRepoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1.5 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 text-[#005a54] text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs"
-            title="Mở cổng toàn bộ 15 bản trình chiếu Toán 10 trên GitHub Pages"
+            title={`Mở cổng toàn bộ kho bài trình chiếu Toán ${grade} trên GitHub Pages`}
           >
             <Globe className="w-3.5 h-3.5 text-teal-600" />
-            <span className="hidden sm:inline">Cổng Slide Toán 10</span>
+            <span className="hidden sm:inline">{slideRepoLabel}</span>
           </a>
 
           <button
@@ -414,13 +421,13 @@ export default function LessonVideoSection({ lesson }) {
                       Xem Video Bài Giảng
                     </button>
                     <a
-                      href="https://buiquy77.github.io/toan10-slides/"
+                      href={slideRepoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
                     >
                       <Globe className="w-3.5 h-3.5 text-teal-400" />
-                      <span>Xem Kho Slide Toán 10</span>
+                      <span>Xem Kho Slide Toán {grade}</span>
                     </a>
                   </div>
                 </div>
@@ -624,7 +631,7 @@ export default function LessonVideoSection({ lesson }) {
                     type="text"
                     value={adminTheoryUrl}
                     onChange={(e) => setAdminTheoryUrl(e.target.value)}
-                    placeholder="Ví dụ: https://buiquy77.github.io/toan10-slides/Bai01_MenhDe_Slide.html"
+                    placeholder={`Ví dụ: https://buiquy77.github.io/toan${grade}-slides/Bai01_MenhDe_Slide.html`}
                     className="w-full p-2 rounded-lg border border-teal-200 text-xs bg-white focus:outline-none focus:border-[#005a54]"
                   />
                 </div>
@@ -637,7 +644,7 @@ export default function LessonVideoSection({ lesson }) {
                     type="text"
                     value={adminExerciseUrl}
                     onChange={(e) => setAdminExerciseUrl(e.target.value)}
-                    placeholder="Ví dụ: https://buiquy77.github.io/toan10-slides/Bai01_BaiTap_Slide.html"
+                    placeholder={`Ví dụ: https://buiquy77.github.io/toan${grade}-slides/Bai01_BaiTap_Slide.html`}
                     className="w-full p-2 rounded-lg border border-teal-200 text-xs bg-white focus:outline-none focus:border-[#005a54]"
                   />
                 </div>
