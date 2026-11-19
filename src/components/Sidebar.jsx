@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getAppConfig } from '../services/customizationService';
+import { subscribeSyncStatus } from '../services/cloudSyncService';
 import {
   Box,
   Compass,
@@ -25,7 +26,8 @@ import {
   LogOut,
   Shield,
   GraduationCap,
-  Settings
+  Settings,
+  Globe
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -43,8 +45,14 @@ export default function Sidebar({
   onOpenProfileModal
 }) {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(null);
   const { currentUser, isGuest, isStudent, isTeacher, setIsLoginModalOpen, logout, promptLoginForFeature } = useAuth();
   const appConfig = getAppConfig();
+
+  useEffect(() => {
+    const unsub = subscribeSyncStatus((st) => setSyncStatus(st));
+    return unsub;
+  }, []);
 
   const examWorkspaces = [
     {
@@ -344,6 +352,41 @@ export default function Sidebar({
                 {appConfig?.appSubtitle || 'Toán THPT 10–12 • GDPT 2018'}
               </p>
             </div>
+          </div>
+
+          {/* Cloud Sync Status Indicator */}
+          <div
+            onClick={() => {
+              if (isTeacher) {
+                handleModuleClick('admin_customization');
+              }
+            }}
+            className="px-3.5 py-1.5 bg-slate-100/90 border-b border-slate-200/90 flex items-center justify-between text-[11px] text-slate-600 cursor-pointer hover:bg-slate-200/70 transition-colors"
+            title={isTeacher ? 'Bấm để mở bảng cấu hình Đồng bộ Đám mây' : 'Trạng thái kết nối máy chủ'}
+          >
+            <div className="flex items-center gap-1.5 font-medium truncate">
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  syncStatus?.state === 'synced'
+                    ? 'bg-emerald-500'
+                    : syncStatus?.state === 'syncing'
+                    ? 'bg-blue-500 animate-spin'
+                    : syncStatus?.state === 'error'
+                    ? 'bg-rose-500'
+                    : 'bg-amber-500'
+                }`}
+              />
+              <span className="truncate">
+                {syncStatus?.state === 'synced'
+                  ? 'Đám mây: Đã đồng bộ'
+                  : syncStatus?.state === 'syncing'
+                  ? 'Đang đồng bộ...'
+                  : syncStatus?.state === 'error'
+                  ? 'Lỗi kết nối đám mây'
+                  : 'Ngoại tuyến (Offline)'}
+              </span>
+            </div>
+            <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           </div>
 
           {/* User Profile Card */}

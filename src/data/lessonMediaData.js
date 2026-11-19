@@ -1,8 +1,10 @@
 /**
  * lessonMediaData.js
  * Quản lý Đề luyện tập sau bài học và Video tóm tắt bài học chuẩn GDPT 2018
- * Hỗ trợ lưu trữ tùy biến bởi Giáo viên / Admin vào localStorage
+ * Hỗ trợ lưu trữ tùy biến bởi Giáo viên / Admin vào localStorage & Đám mây
  */
+
+import { notifyDataChanged } from '../services/cloudSyncService';
 
 // 1. Kho đề luyện tập mẫu chuẩn mực (có cả Trắc nghiệm 4 lựa chọn, Đúng/Sai và Điền số)
 export const DEFAULT_LESSON_QUIZZES = {
@@ -493,6 +495,7 @@ export function saveCustomLessonVideo(lessonId, videoData) {
     const parsed = savedVideos ? JSON.parse(savedVideos) : {};
     parsed[lessonId] = videoData;
     localStorage.setItem('mathverse_custom_videos_v1', JSON.stringify(parsed));
+    notifyDataChanged('videos');
     return true;
   } catch (e) {
     console.error('Lỗi lưu custom video:', e);
@@ -507,6 +510,7 @@ export function resetLessonVideo(lessonId) {
       const parsed = JSON.parse(savedVideos);
       delete parsed[lessonId];
       localStorage.setItem('mathverse_custom_videos_v1', JSON.stringify(parsed));
+      notifyDataChanged('videos');
     }
     return true;
   } catch (e) {
@@ -612,6 +616,7 @@ export function saveCustomLessonSlide(lessonId, slideData) {
     const parsed = savedSlides ? JSON.parse(savedSlides) : {};
     parsed[lessonId] = slideData;
     localStorage.setItem('mathverse_custom_slides_v1', JSON.stringify(parsed));
+    notifyDataChanged('slides');
     return true;
   } catch (e) {
     console.error('Lỗi lưu custom slide:', e);
@@ -626,6 +631,7 @@ export function resetLessonSlide(lessonId) {
       const parsed = JSON.parse(savedSlides);
       delete parsed[lessonId];
       localStorage.setItem('mathverse_custom_slides_v1', JSON.stringify(parsed));
+      notifyDataChanged('slides');
     }
     return true;
   } catch (e) {

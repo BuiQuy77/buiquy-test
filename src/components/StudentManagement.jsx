@@ -4,6 +4,7 @@ import {
   getStoredStudents,
   getClassesList,
   addSingleStudent,
+  updateSingleStudent,
   deleteSingleStudent,
   resetStudentsToDefault,
   importStudentsFromExcel,
@@ -25,7 +26,9 @@ import {
   GraduationCap,
   Key,
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  Pencil,
+  X
 } from 'lucide-react';
 
 export default function StudentManagement() {
@@ -44,6 +47,14 @@ export default function StudentManagement() {
   const [newStudentPassword, setNewStudentPassword] = useState('123');
   const [newStudentGender, setNewStudentGender] = useState('Nam');
 
+  // Form sửa thông tin học sinh
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editClass, setEditClass] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editGender, setEditGender] = useState('Nam');
+
   // Load danh sách học sinh từ localStorage
   const reloadData = () => {
     const list = getStoredStudents();
@@ -52,7 +63,41 @@ export default function StudentManagement() {
 
   useEffect(() => {
     reloadData();
+    // Lắng nghe sự kiện đồng bộ đám mây để cập nhật danh sách khi máy khác thay đổi
+    const handleSync = () => reloadData();
+    window.addEventListener('mathmate_cloud_synced', handleSync);
+    return () => window.removeEventListener('mathmate_cloud_synced', handleSync);
   }, []);
+
+  const handleOpenEditModal = (st) => {
+    setEditingStudent(st);
+    setEditName(st.name || '');
+    setEditClass(st.class || '');
+    setEditUsername(st.username || '');
+    setEditPassword(st.password || '123');
+    setEditGender(st.gender || 'Nam');
+  };
+
+  const handleSaveEditStudent = (e) => {
+    e.preventDefault();
+    if (!editName.trim() || !editClass.trim()) {
+      alert('Vui lòng nhập Họ tên và Lớp học!');
+      return;
+    }
+    const updated = updateSingleStudent(editingStudent.id, {
+      name: editName.trim(),
+      class: editClass.trim().toUpperCase(),
+      username: editUsername.trim() || editingStudent.username,
+      password: editPassword.trim() || '123',
+      gender: editGender
+    });
+    setStudents(updated);
+    setEditingStudent(null);
+    setStatusMessage({
+      type: 'success',
+      text: `Đã cập nhật thông tin học sinh "${editName}" thành công (đã đồng bộ lên đám mây)!`
+    });
+  };
 
   const classesList = getClassesList(students);
 
@@ -428,6 +473,14 @@ export default function StudentManagement() {
                         </button>
 
                         <button
+                          onClick={() => handleOpenEditModal(st)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                          title="Sửa thông tin học sinh (đổi họ tên, lớp, mật khẩu...)"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-amber-600" />
+                        </button>
+
+                        <button
                           onClick={() => handleDelete(st.id, st.name)}
                           className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Xóa học sinh này"
@@ -544,6 +597,126 @@ export default function StudentManagement() {
                   className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-md shadow-teal-600/20"
                 >
                   Thêm Học Sinh
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sửa Thông Tin Học Sinh */}
+      {editingStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900">
+                    Sửa Thông Tin Thành Viên
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Đổi tên, lớp hoặc đặt lại mật khẩu cho học sinh
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingStudent(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditStudent} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Họ và tên thành viên / học sinh:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nhập họ và tên mới..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-amber-500 font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Lớp học:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editClass}
+                    onChange={(e) => setEditClass(e.target.value)}
+                    placeholder="VD: 10A1, 12A1"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs uppercase font-extrabold focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Giới tính:
+                  </label>
+                  <select
+                    value={editGender}
+                    onChange={(e) => setEditGender(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-amber-500 bg-white"
+                  >
+                    <option value="Nam">Nam (👨‍🎓)</option>
+                    <option value="Nữ">Nữ (👩‍🎓)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Tên đăng nhập (Username):
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  placeholder="VD: 10a1_01"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Mật khẩu đăng nhập:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  placeholder="Nhập mật khẩu..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-600/20 cursor-pointer flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Lưu Thay Đổi</span>
                 </button>
               </div>
             </form>

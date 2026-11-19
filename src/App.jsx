@@ -20,6 +20,7 @@ import StudentAssignmentsNotice from './components/StudentAssignmentsNotice';
 import TeacherProfileModal from './components/TeacherProfileModal';
 import AdminCustomization from './components/AdminCustomization';
 import LoginModal from './components/LoginModal';
+import { initCloudSync } from './services/cloudSyncService';
 import { Sparkles } from 'lucide-react';
 
 class ModuleErrorBoundary extends React.Component {
@@ -102,12 +103,23 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Khởi tạo dịch vụ đồng bộ đám mây và lắng nghe liên kết đồng bộ
+    initCloudSync();
+
     const params = new URLSearchParams(window.location.search);
     if (params.get('ar') === 'true' || params.get('ar') === '1' || params.has('m')) {
       setCurrentARModelId(resolveQRModelId(params));
       setIsStandaloneAR(true);
       setActiveModule('ar');
     }
+
+    const handleSync = () => {
+      // Làm mới danh mục SGK và dữ liệu khi có cập nhật đám mây
+      setCurriculumResetKey((k) => k + 1);
+    };
+
+    window.addEventListener('mathmate_cloud_synced', handleSync);
+    return () => window.removeEventListener('mathmate_cloud_synced', handleSync);
   }, []);
 
   const handleSelectModule = (modId) => {

@@ -24,6 +24,17 @@ import {
 } from '../services/curriculumDatabase';
 import { getStoredTeacher, saveTeacher } from '../services/studentDatabase';
 import {
+  getCloudSyncConfig,
+  saveCloudSyncConfig,
+  testConnection,
+  pushToCloud,
+  pullFromCloud,
+  generateShareSyncUrl,
+  exportFullBackup,
+  importFullBackup,
+  subscribeSyncStatus
+} from '../services/cloudSyncService';
+import {
   Sliders,
   Palette,
   FileText,
@@ -42,7 +53,14 @@ import {
   HelpCircle,
   ExternalLink,
   Save,
-  Check
+  Check,
+  Globe,
+  Cloud,
+  CloudLightning,
+  Copy,
+  Link,
+  Wifi,
+  RefreshCw
 } from 'lucide-react';
 
 export default function AdminCustomization({ initialTab = 'branding', openAddExamImmediately = false }) {
@@ -87,6 +105,16 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
     }
   };
 
+  const [syncConfig, setSyncConfig] = useState(() => getCloudSyncConfig());
+  const [syncEndpoint, setSyncEndpoint] = useState(() => getCloudSyncConfig().endpointUrl || '');
+  const [syncStatus, setSyncStatus] = useState({ state: 'idle', message: '', lastSyncTime: null });
+  const [testResult, setTestResult] = useState(null);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isPushing, setIsPushing] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const fullBackupFileRef = useRef(null);
+
   const loadData = () => {
     const curConfig = getAppConfig();
     setConfig(curConfig);
@@ -98,7 +126,109 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
 
   useEffect(() => {
     loadData();
+    const unsubscribe = subscribeSyncStatus((st) => setSyncStatus(st));
+    const handleSynced = () => loadData();
+    window.addEventListener('mathmate_cloud_synced', handleSynced);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('mathmate_cloud_synced', handleSynced);
+    };
   }, []);
+
+  const handleSaveSyncConfig = (e) => {
+    e?.preventDefault();
+    const updated = saveCloudSyncConfig({
+      ...syncConfig,
+      endpointUrl: syncEndpoint.trim()
+    });
+    setSyncConfig(updated);
+    setNotice({ type: 'success', text: 'Đã lưu cấu hình kết nối đám mây thành công!' });
+    setTimeout(() => setNotice(null), 3500);
+  };
+
+  const handleTestConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const res = await testConnection(syncEndpoint.trim());
+      setTestResult(res);
+      if (res.success) {
+        setNotice({ type: 'success', text: 'Kiểm tra kết nối đám mây thành công! Đã sẵn sàng đồng bộ.' });
+        setTimeout(() => setNotice(null), 4000);
+      }
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handlePushCloud = async () => {
+    setIsPushing(true);
+    try {
+      const res = await pushToCloud();
+      if (res.success) {
+        setNotice({ type: 'success', text: 'Đã đẩy toàn bộ dữ liệu (Slide, Học sinh, Cấu hình) lên Đám mây thành công!' });
+      } else {
+        alert(res.message || 'Lỗi đẩy dữ liệu lên đám mây!');
+      }
+    } finally {
+      setIsPushing(false);
+      setTimeout(() => setNotice(null), 4000);
+    }
+  };
+
+  const handlePullCloud = async () => {
+    setIsPulling(true);
+    try {
+      const res = await pullFromCloud(false);
+      if (res.success) {
+        loadData();
+        setNotice({ type: 'success', text: 'Đã kéo và cập nhật dữ liệu mới nhất từ Đám mây về máy này thành công!' });
+      } else {
+        alert(res.message || 'Lỗi kéo dữ liệu từ đám mây!');
+      }
+    } finally {
+      setIsPulling(false);
+      setTimeout(() => setNotice(null), 4000);
+    }
+  };
+
+  const handleCopySyncLink = () => {
+    const url = generateShareSyncUrl();
+    if (!url) {
+      alert('Lỗi tạo link đồng bộ!');
+      return;
+    }
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 3000);
+    }).catch(() => {
+      prompt('Sao chép đường link đồng bộ dưới đây và mở trên máy tính khác:', url);
+    });
+  };
+
+  const handleExportFull = () => {
+    exportFullBackup();
+    setNotice({ type: 'success', text: 'Đã xuất toàn bộ dữ liệu hệ thống (.json) thành công!' });
+    setTimeout(() => setNotice(null), 3500);
+  };
+
+  const handleImportFull = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const res = importFullBackup(event.target.result);
+      if (res.success) {
+        loadData();
+        setNotice({ type: 'success', text: 'Đã khôi phục toàn bộ hệ thống từ file (.json) và đồng bộ lên đám mây!' });
+        setTimeout(() => setNotice(null), 4000);
+      } else {
+        alert(res.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const handleSaveConfig = (e) => {
     e?.preventDefault();
@@ -246,14 +376,15 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
         </div>
       )}
 
-      {/* 5 Tabs Điều Khiển Admin */}
+      {/* 6 Tabs Điều Khiển Admin */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
         {[
           { id: 'branding', label: '1. Nhận diện & Môn học', icon: Palette },
-          { id: 'curriculum', label: '2. Quản lý Sách Giáo Khoa (SGK)', icon: BookOpen },
-          { id: 'exams', label: '3. Ngân hàng Đề & Đáp án OMR', icon: Award },
-          { id: 'sections', label: '4. Tùy biến Tiêu đề Phân hệ', icon: Layers },
-          { id: 'backup', label: '5. Sao lưu & Chuyển giao (.json)', icon: Download }
+          { id: 'cloud_sync', label: '2. Đồng Bộ Đám Mây (Live Sync)', icon: Globe },
+          { id: 'curriculum', label: '3. Quản lý Sách Giáo Khoa (SGK)', icon: BookOpen },
+          { id: 'exams', label: '4. Ngân hàng Đề & Đáp án OMR', icon: Award },
+          { id: 'sections', label: '5. Tùy biến Tiêu đề Phân hệ', icon: Layers },
+          { id: 'backup', label: '6. Sao lưu & Chuyển giao (.json)', icon: Download }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -366,7 +497,275 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
         </form>
       )}
 
-      {/* TAB 2: QUẢN LÝ SÁCH GIÁO KHOA (SGK) & DỮ LIỆU BÀI HỌC */}
+      {/* TAB 2: ĐỒNG BỘ ĐÁM MÂY (LIVE CLOUD SYNC) */}
+      {activeTab === 'cloud_sync' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Header & Trạng thái trực tiếp */}
+          <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white p-6 rounded-2xl shadow-sm border border-teal-800/50 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[11px] font-extrabold uppercase tracking-wider border border-teal-500/30 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-teal-300" />
+                    Đồng Bộ Đa Thiết Bị • Web Động
+                  </span>
+                  <span className="text-slate-400 text-xs">•</span>
+                  <span className="text-teal-200 text-xs">Realtime Cloud Sync</span>
+                </div>
+                <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                  Đồng Bộ Dữ Liệu Đám Mây &amp; Quản Trị Trung Tâm
+                </h3>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  Khi Admin thêm link slide HTML, đổi tên giáo viên, tạo học sinh hay sửa bài tập trên một máy tính bất kỳ, dữ liệu sẽ tự động lưu lên đám mây và đồng bộ sang tất cả máy tính khác.
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/15 min-w-[220px] space-y-1.5">
+                <div className="text-[11px] text-slate-300 font-medium">Trạng thái kết nối:</div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-3 h-3 rounded-full shrink-0 ${
+                      syncStatus.state === 'synced'
+                        ? 'bg-emerald-400 animate-pulse'
+                        : syncStatus.state === 'syncing'
+                        ? 'bg-blue-400 animate-spin'
+                        : syncStatus.state === 'error'
+                        ? 'bg-rose-400'
+                        : 'bg-amber-400'
+                    }`}
+                  />
+                  <span className="font-extrabold text-xs text-white">
+                    {syncStatus.state === 'synced'
+                      ? 'Đã Đồng Bộ Với Đám Mây'
+                      : syncStatus.state === 'syncing'
+                      ? 'Đang Đồng Bộ Dữ Liệu...'
+                      : syncStatus.state === 'error'
+                      ? 'Lỗi Kết Nối Máy Chủ'
+                      : 'Chế Độ Ngoại Tuyến (Offline)'}
+                  </span>
+                </div>
+                {syncStatus.lastSyncTime && (
+                  <div className="text-[10px] text-teal-200">
+                    Lần cuối: {new Date(syncStatus.lastSyncTime).toLocaleTimeString('vi-VN')}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Action Toolbar */}
+            <div className="pt-3 border-t border-teal-800/40 flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={handlePullCloud}
+                disabled={isPulling}
+                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isPulling ? 'animate-spin' : ''}`} />
+                <span>{isPulling ? 'Đang kéo dữ liệu...' : 'Kéo dữ liệu từ Đám mây về máy này'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePushCloud}
+                disabled={isPushing}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <CloudLightning className={`w-3.5 h-3.5 text-amber-300 ${isPushing ? 'animate-spin' : ''}`} />
+                <span>{isPushing ? 'Đang đẩy lên...' : 'Đẩy toàn bộ dữ liệu máy này lên Đám mây'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCopySyncLink}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Link className="w-3.5 h-3.5 text-teal-300" />
+                <span>{copiedLink ? '✓ Đã sao chép Link đồng bộ!' : 'Sao chép Link Đồng Bộ 1-Chạm'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Form Cấu hình Máy chủ Đám mây */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Cloud className="w-5 h-5 text-teal-700" />
+                <span>Cấu Hình Máy Chủ Cơ Sở Dữ Liệu Đám Mây (Google Firebase)</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Khuyên dùng Google Firebase Realtime Database: Hoàn toàn miễn phí, tốc độ cao dưới 50ms và không giới hạn thiết bị truy cập.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveSyncConfig} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Đường dẫn Cơ Sở Dữ Liệu (Firebase Database URL / REST API):
+                </label>
+                <div className="relative">
+                  <Globe className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={syncEndpoint}
+                    onChange={(e) => setSyncEndpoint(e.target.value)}
+                    placeholder="VD: https://buiquy-test-default-rtdb.firebaseio.com"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-teal-600 font-mono text-slate-900 font-medium"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Đường dẫn này sẽ được dùng chung cho tất cả các máy tính để tự động tải &amp; cập nhật dữ liệu.
+                </p>
+              </div>
+
+              {testResult && (
+                <div
+                  className={`p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2 animate-fadeIn ${
+                    testResult.success
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border border-rose-200 text-rose-800'
+                  }`}
+                >
+                  {testResult.success ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  )}
+                  <span className="leading-relaxed">{testResult.message}</span>
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={isTesting}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+                >
+                  <Activity className={`w-4 h-4 text-teal-600 ${isTesting ? 'animate-spin' : ''}`} />
+                  <span>{isTesting ? 'Đang kiểm tra...' : 'Kiểm Tra Kết Nối (Health Check)'}</span>
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Lưu Cấu Hình Kết Nối</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Hướng dẫn 3 Bước Cài Đặt Firebase Miễn Phí Vĩnh Viễn */}
+          <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-3.5">
+            <div className="flex items-center gap-2 text-amber-900 font-extrabold text-sm">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>Hướng Dẫn 3 Bước Tạo Cơ Sở Dữ Liệu Firebase Miễn Phí (Chỉ mất 1 phút)</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-700">
+              <div className="p-3 bg-white rounded-xl border border-amber-200/80 space-y-1">
+                <div className="font-extrabold text-amber-800">Bước 1: Tạo dự án</div>
+                <p className="text-[11px] leading-relaxed text-slate-600">
+                  Truy cập <strong>console.firebase.google.com</strong> bằng Gmail bất kỳ, bấm <strong>Thêm dự án</strong> (ví dụ đặt tên: <code>toan-buiquy</code>).
+                </p>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-amber-200/80 space-y-1">
+                <div className="font-extrabold text-amber-800">Bước 2: Tạo Realtime Database</div>
+                <p className="text-[11px] leading-relaxed text-slate-600">
+                  Ở menu bên trái, chọn <strong>Build &gt; Realtime Database &gt; Tạo cơ sở dữ liệu</strong>. Chọn chế độ <strong>Start in test mode</strong> (Quy tắc <code>.read: true, .write: true</code>).
+                </p>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-amber-200/80 space-y-1">
+                <div className="font-extrabold text-amber-800">Bước 3: Dán link vào web</div>
+                <p className="text-[11px] leading-relaxed text-slate-600">
+                  Copy link URL hiển thị ở trên (dạng <code>https://ten-du-an-default-rtdb.firebaseio.com</code>) và dán vào ô bên trên rồi bấm <strong>Lưu cấu hình</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Phương Án Dự Phòng: Xuất / Nạp File JSON & Link Đồng Bộ */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Download className="w-5 h-5 text-teal-700" />
+                <span>Phương Án Chuyển Dữ Liệu Tức Thì (Không Cần Cài Đặt)</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Nếu chưa thiết lập Firebase, Thầy cô có thể chuyển toàn bộ Slide và Cấu hình sang máy khác trong 2 giây bằng Link hoặc File sao lưu:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* Box 1: Link đồng bộ */}
+              <div className="p-4 rounded-xl border border-teal-100 bg-teal-50/50 space-y-2.5 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <div className="font-extrabold text-teal-900 flex items-center gap-1.5">
+                    <Link className="w-4 h-4 text-teal-700" />
+                    <span>Cách 1: Mở Link Đồng Bộ Trên Máy Khác</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Hệ thống sẽ nén toàn bộ Slide HTML, hồ sơ giáo viên vào 1 đường link duy nhất. Khi mở link này trên máy tính khác, toàn bộ slide sẽ tự động nạp vào máy đó.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopySyncLink}
+                  className="w-full py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{copiedLink ? '✓ Đã sao chép link!' : 'Sao chép Link Đồng Bộ 1-Chạm'}</span>
+                </button>
+              </div>
+
+              {/* Box 2: Xuất nạp file */}
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <div className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-slate-700" />
+                    <span>Cách 2: Xuất / Nạp Gói Dữ Liệu Hệ Thống (.json)</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Tải về 1 file sao lưu đầy đủ chứa toàn bộ Slide, Danh sách học sinh, Đề thi và Cấu hình để nạp sang bất kỳ thiết bị nào.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleExportFull}
+                    className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Xuất File .json</span>
+                  </button>
+                  <input
+                    type="file"
+                    accept=".json"
+                    ref={fullBackupFileRef}
+                    onChange={handleImportFull}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fullBackupFileRef.current?.click()}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Nạp File .json</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: QUẢN LÝ SÁCH GIÁO KHOA (SGK) & DỮ LIỆU BÀI HỌC */}
       {activeTab === 'curriculum' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Header */}

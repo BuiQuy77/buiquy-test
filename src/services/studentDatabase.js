@@ -1,7 +1,10 @@
 /**
  * Dịch vụ Quản lý Cơ sở Dữ liệu Học sinh & Phân lớp (Offline-First Storage)
  * Hỗ trợ Import/Export Excel (.xlsx) thông qua thư viện SheetJS (window.XLSX)
+ * Tự động đồng bộ lên Đám mây qua cloudSyncService
  */
+
+import { notifyDataChanged } from './cloudSyncService';
 
 const STORAGE_KEYS = {
   STUDENTS: 'mathmate_students_db_v1',
@@ -14,7 +17,7 @@ export const DEFAULT_TEACHER = {
   id: 'gv_admin',
   username: 'admin',
   password: '123',
-  name: 'Thầy Nguyễn Đức Anh',
+  name: 'Thầy Bùi Quý',
   role: 'teacher',
   subject: 'Toán học THPT',
   school: 'Trường THPT Chuyên',
@@ -76,6 +79,7 @@ export function getStoredStudents() {
 export function saveStudents(students) {
   try {
     localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+    notifyDataChanged('students');
   } catch (e) {
     console.error('Lỗi ghi database học sinh:', e);
   }
@@ -97,6 +101,7 @@ export function getStoredTeacher() {
 export function saveTeacher(teacher) {
   try {
     localStorage.setItem(STORAGE_KEYS.TEACHER, JSON.stringify(teacher));
+    notifyDataChanged('teacher');
   } catch (e) {
     console.error('Lỗi ghi thông tin giáo viên:', e);
   }
@@ -123,6 +128,27 @@ export function addSingleStudent(studentData) {
     role: 'student'
   };
   const updated = [newStudent, ...current];
+  saveStudents(updated);
+  return updated;
+}
+
+// Cập nhật thông tin một học sinh (Đổi tên, lớp, mật khẩu...)
+export function updateSingleStudent(studentId, updatedData) {
+  const current = getStoredStudents();
+  const updated = current.map((s) => {
+    if (s.id === studentId || s.username === studentId) {
+      return {
+        ...s,
+        ...updatedData,
+        name: updatedData.name ? updatedData.name.trim() : s.name,
+        class: updatedData.class ? updatedData.class.trim() : s.class,
+        username: updatedData.username ? updatedData.username.trim() : s.username,
+        password: updatedData.password ? String(updatedData.password).trim() : s.password,
+        gender: updatedData.gender || s.gender
+      };
+    }
+    return s;
+  });
   saveStudents(updated);
   return updated;
 }

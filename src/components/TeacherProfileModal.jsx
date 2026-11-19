@@ -65,7 +65,7 @@ export default function TeacherProfileModal({ isOpen, onClose }) {
   };
 
   const handleResetToDefault = () => {
-    if (window.confirm('Khôi phục lại thông tin giáo viên về mặc định (Thầy Nguyễn Đức Anh)?')) {
+    if (window.confirm(`Khôi phục lại thông tin giáo viên về mặc định (${DEFAULT_TEACHER.name})?`)) {
       setName(DEFAULT_TEACHER.name);
       setUsername(DEFAULT_TEACHER.username);
       setPassword(DEFAULT_TEACHER.password);

@@ -4,6 +4,7 @@
  */
 
 import { getStoredStudents } from './studentDatabase';
+import { notifyDataChanged } from './cloudSyncService';
 
 const STORAGE_KEYS = {
   ASSIGNMENTS: 'mathmate_assignments_v1',
@@ -149,6 +150,7 @@ export function getStoredAssignments() {
 export function saveAssignments(assignments) {
   try {
     localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
+    notifyDataChanged('assignments');
   } catch (e) {
     console.error('Lỗi ghi assignments:', e);
   }
@@ -173,6 +175,7 @@ export function getStoredSubmissions() {
 export function saveSubmissions(submissions) {
   try {
     localStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    notifyDataChanged('submissions');
   } catch (e) {
     console.error('Lỗi ghi submissions:', e);
   }

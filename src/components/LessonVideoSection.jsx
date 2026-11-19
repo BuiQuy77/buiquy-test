@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MathView from './MathView';
+import { useAuth } from '../context/AuthContext';
 import {
   getLessonVideo,
   saveCustomLessonVideo,
@@ -32,6 +33,7 @@ import {
 } from 'lucide-react';
 
 export default function LessonVideoSection({ lesson }) {
+  const { isTeacher } = useAuth();
   const [videoData, setVideoData] = useState(null);
   const [slideData, setSlideData] = useState(null);
   const [activeMediaTab, setActiveMediaTab] = useState('theory'); // 'theory' | 'exercise' | 'video'
@@ -72,6 +74,20 @@ export default function LessonVideoSection({ lesson }) {
     setIsAutoPlaying(false);
   }, [lesson]);
 
+  // Lắng nghe sự kiện đồng bộ đám mây để cập nhật Slide & Video ngay lập tức khi máy khác lưu
+  useEffect(() => {
+    const handleCloudSync = () => {
+      if (!lesson) return;
+      const loadedVideo = getLessonVideo(lesson.id, lesson);
+      const loadedSlide = getLessonSlide(lesson.id, lesson);
+      setVideoData(loadedVideo);
+      setSlideData(loadedSlide);
+    };
+
+    window.addEventListener('mathmate_cloud_synced', handleCloudSync);
+    return () => window.removeEventListener('mathmate_cloud_synced', handleCloudSync);
+  }, [lesson]);
+
   // Slideshow timer cho AI Visual Slideshow
   useEffect(() => {
     let timer;
@@ -84,7 +100,7 @@ export default function LessonVideoSection({ lesson }) {
   }, [isAutoPlaying]);
 
   const handleOpenAdmin = () => {
-    if (!videoData) return;
+    if (!isTeacher || !videoData) return;
     setAdminUrl(videoData.embedUrl || (videoData.youtubeId ? `https://www.youtube.com/watch?v=${videoData.youtubeId}` : ''));
     setAdminTitle(videoData.title || '');
     setAdminAuthor(videoData.author || '');
@@ -298,13 +314,15 @@ export default function LessonVideoSection({ lesson }) {
             <span className="hidden sm:inline">{slideRepoLabel}</span>
           </a>
 
-          <button
-            onClick={handleOpenAdmin}
-            className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-          >
-            <Settings className="w-3.5 h-3.5 text-teal-300" />
-            <span>Đổi Video / Slide (Admin)</span>
-          </button>
+          {isTeacher && (
+            <button
+              onClick={handleOpenAdmin}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5 text-teal-300" />
+              <span>Đổi Video / Slide (Admin)</span>
+            </button>
+          )}
         </div>
       </div>
 

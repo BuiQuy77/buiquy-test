@@ -6,6 +6,7 @@
 
 import defaultExams from '../data/bo_de_2026.json';
 import { getStoredTeacher, saveTeacher } from './studentDatabase';
+import { notifyDataChanged } from './cloudSyncService';
 
 const STORAGE_KEYS = {
   APP_CONFIG: 'mathmate_system_config_v1',
@@ -48,6 +49,7 @@ export function getAppConfig() {
 export function saveAppConfig(newConfig) {
   try {
     localStorage.setItem(STORAGE_KEYS.APP_CONFIG, JSON.stringify(newConfig));
+    notifyDataChanged('config');
   } catch (e) {
     console.error('Lỗi lưu cấu hình hệ thống:', e);
   }
@@ -67,6 +69,7 @@ export function getCustomExams() {
 export function saveCustomExams(exams) {
   try {
     localStorage.setItem(STORAGE_KEYS.CUSTOM_EXAMS, JSON.stringify(exams));
+    notifyDataChanged('exams');
   } catch (e) {
     console.error('Lỗi lưu custom exams:', e);
   }
