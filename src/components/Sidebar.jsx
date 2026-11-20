@@ -362,7 +362,7 @@ export default function Sidebar({
               }
             }}
             className="px-3.5 py-1.5 bg-slate-100/90 border-b border-slate-200/90 flex items-center justify-between text-[11px] text-slate-600 cursor-pointer hover:bg-slate-200/70 transition-colors"
-            title={isTeacher ? 'Bấm để mở bảng cấu hình Đồng bộ Đám mây' : 'Trạng thái kết nối máy chủ'}
+            title={isTeacher ? 'Bấm để mở bảng cấu hình Đồng bộ Đám mây & Quản trị' : 'Trạng thái dữ liệu hệ thống'}
           >
             <div className="flex items-center gap-1.5 font-medium truncate">
               <span
@@ -373,7 +373,7 @@ export default function Sidebar({
                     ? 'bg-blue-500 animate-spin'
                     : syncStatus?.state === 'error'
                     ? 'bg-rose-500'
-                    : 'bg-amber-500'
+                    : 'bg-emerald-500'
                 }`}
               />
               <span className="truncate">
@@ -383,7 +383,7 @@ export default function Sidebar({
                   ? 'Đang đồng bộ...'
                   : syncStatus?.state === 'error'
                   ? 'Lỗi kết nối đám mây'
-                  : 'Ngoại tuyến (Offline)'}
+                  : 'Dữ liệu chuẩn (File tĩnh)'}
               </span>
             </div>
             <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />

@@ -28,8 +28,9 @@ export const SYNC_STORAGE_KEYS = {
 export const DEFAULT_CLOUD_CONFIG = {
   enabled: true,
   provider: 'firebase', // 'firebase' | 'custom_rest'
-  // Endpoint Firebase mặc định (Thầy cô có thể đổi sang Firebase riêng của mình trong Cài đặt Admin)
-  endpointUrl: 'https://buiquy-test-default-rtdb.firebaseio.com',
+  // Mặc định để trống để web chạy mượt 100% bằng dữ liệu tĩnh đã tích hợp sẵn trong mã nguồn.
+  // Khi thầy cô muốn đồng bộ trực tiếp giữa nhiều máy, chỉ cần dán URL Firebase của thầy cô vào đây.
+  endpointUrl: '',
   databaseNode: 'mathmate_central_db',
   autoSyncOnLoad: true,
   autoSyncOnChange: true,
@@ -38,10 +39,10 @@ export const DEFAULT_CLOUD_CONFIG = {
 
 // Trạng thái đồng bộ trong bộ nhớ (In-memory state)
 let syncStatus = {
-  state: 'idle', // 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
+  state: 'local', // 'local' | 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
   lastSyncTime: null,
   lastError: null,
-  message: ''
+  message: 'Chế độ dữ liệu gốc (100% Slide & Cài đặt tích hợp sẵn trong mã nguồn web)'
 };
 
 const listeners = new Set();
@@ -72,7 +73,12 @@ export function getCloudSyncConfig() {
     if (!raw) {
       return DEFAULT_CLOUD_CONFIG;
     }
-    return { ...DEFAULT_CLOUD_CONFIG, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    // Nếu trong bộ nhớ từng lưu URL thử nghiệm cũ không tồn tại, tự động dọn sạch
+    if (parsed.endpointUrl && parsed.endpointUrl.includes('buiquy-test-default-rtdb')) {
+      parsed.endpointUrl = '';
+    }
+    return { ...DEFAULT_CLOUD_CONFIG, ...parsed };
   } catch (e) {
     return DEFAULT_CLOUD_CONFIG;
   }
@@ -249,8 +255,8 @@ export async function pushToCloud() {
 
   const targetUrl = buildEndpointUrl(config);
   if (!targetUrl) {
-    updateStatus({ state: 'offline', message: 'Chưa cấu hình đường link máy chủ đám mây.' });
-    return { success: false, message: 'Chưa cấu hình URL đám mây.' };
+    // Không có URL đám mây: web hoạt động chế độ dữ liệu file tĩnh/cục bộ, không báo lỗi
+    return { success: true, localOnly: true, message: 'Dữ liệu được lưu an toàn trên trình duyệt này.' };
   }
 
   try {
@@ -295,7 +301,7 @@ export async function pullFromCloud(silent = false) {
   if (!config.enabled) return { success: false, message: 'Đồng bộ đám mây đang tắt.' };
 
   const targetUrl = buildEndpointUrl(config);
-  if (!targetUrl) return { success: false, message: 'Chưa cấu hình URL đám mây.' };
+  if (!targetUrl) return { success: true, localOnly: true, message: 'Chế độ dữ liệu file tĩnh.' };
 
   try {
     if (!silent) {
@@ -444,27 +450,31 @@ export function initCloudSync() {
   // 1. Kiểm tra nếu mở từ Link đồng bộ (#sync_data=)
   const syncedFromUrl = checkUrlSync();
 
-  // 2. Kéo dữ liệu đám mây mới nhất trong nền
+  // 2. Kéo dữ liệu đám mây mới nhất trong nền (chỉ chạy khi đã cấu hình URL máy chủ)
   const config = getCloudSyncConfig();
-  if (config.enabled && !syncedFromUrl) {
+  const hasEndpoint = Boolean(config.endpointUrl && config.endpointUrl.trim());
+
+  if (config.enabled && hasEndpoint && !syncedFromUrl) {
     pullFromCloud(true);
   }
 
   // 3. Tự động kiểm tra đồng bộ khi người dùng quay lại tab (Window Focus)
   window.addEventListener('focus', () => {
     const curCfg = getCloudSyncConfig();
-    if (curCfg.enabled) {
+    if (curCfg.enabled && curCfg.endpointUrl && curCfg.endpointUrl.trim()) {
       pullFromCloud(true);
     }
   });
 
-  // 4. Lập lịch đồng bộ định kỳ mỗi 30-60 giây
+  // 4. Lập lịch đồng bộ định kỳ mỗi 30-60 giây (khi có máy chủ)
   if (pollIntervalId) clearInterval(pollIntervalId);
-  const intervalMs = Math.max(15, config.pollIntervalSeconds || 30) * 1000;
-  pollIntervalId = setInterval(() => {
-    const curCfg = getCloudSyncConfig();
-    if (curCfg.enabled) {
-      pullFromCloud(true);
-    }
-  }, intervalMs);
+  if (config.enabled && hasEndpoint) {
+    const intervalMs = Math.max(15, config.pollIntervalSeconds || 30) * 1000;
+    pollIntervalId = setInterval(() => {
+      const curCfg = getCloudSyncConfig();
+      if (curCfg.enabled && curCfg.endpointUrl && curCfg.endpointUrl.trim()) {
+        pullFromCloud(true);
+      }
+    }, intervalMs);
+  }
 }

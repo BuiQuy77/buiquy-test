@@ -519,8 +519,9 @@ export function resetLessonVideo(lessonId) {
   }
 }
 
-// 5. Danh mục Bài Trình Chiếu Manim Slides (Toán 10, 11, 12)
+// 5. Danh mục Bài Trình Chiếu Manim Slides (Toán 10, 11, 12 - Lưu trực tiếp trong mã nguồn web)
 export const DEFAULT_LESSON_SLIDES = {
+  // ==================== TOÁN 10 ====================
   'toan10-bai-1': {
     theoryUrl: 'https://buiquy77.github.io/toan10-slides/Bai01_MenhDe_Slide.html',
     exerciseUrl: 'https://buiquy77.github.io/toan10-slides/Bai01_BaiTap_Slide.html',
@@ -563,29 +564,206 @@ export const DEFAULT_LESSON_SLIDES = {
     title: 'Các Số Đặc Trưng Đo Xu Thế Trung Tâm',
     author: 'Thầy Bùi Quý'
   },
-
-  // TOÁN 12 - HÌNH HỌC KHÔNG GIAN & HỆ TRỤC TỌA ĐỘ OXYZ
-  'toan12-bai-6': {
-    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai06_VectoTrongKhongGian_Slide.html',
+  'toan10-ontap-c4': {
+    theoryUrl: 'https://buiquy77.github.io/toan10-slides/BaiTapCuoiChuong_IV_Slide.html',
     exerciseUrl: null,
-    title: 'Vectơ Trong Không Gian',
+    title: 'Bài tập cuối chương IV (Toán 10)',
+    author: 'Thầy Bùi Quý'
+  },
+
+  // ==================== TOÁN 11 ====================
+  'toan11-bai-1': {
+    theoryUrl: 'https://buiquy77.github.io/toan11-slides/Bai_1_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan11-slides/Bai_1_baitap.html',
+    title: 'Giá trị lượng giác của góc lượng giác',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan11-bai-2': {
+    theoryUrl: 'https://buiquy77.github.io/toan11-slides/Bai_2_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan11-slides/Bai_2_baitap.html',
+    title: 'Công thức lượng giác',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan11-bai-3': {
+    theoryUrl: 'https://buiquy77.github.io/toan11-slides/Bai_3_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan11-slides/Bai_3_baitap.html',
+    title: 'Hàm số lượng giác',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan11-bai-4': {
+    theoryUrl: 'https://buiquy77.github.io/toan11-slides/Bai_4_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan11-slides/Bai_4_baitap.html',
+    title: 'Phương trình lượng giác cơ bản',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan11-ontap-c1': {
+    theoryUrl: 'https://buiquy77.github.io/toan11-slides/BaiTapCuoiChuong1_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương I (Toán 11)',
+    author: 'Thầy Bùi Quý'
+  },
+
+  // ==================== TOÁN 12 (TOÀN BỘ 19 BÀI & CÁC CHƯƠNG) ====================
+  'toan12-bai-1': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_1_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_1_baitap.html',
+    title: 'Tính đơn điệu và cực trị của hàm số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-2': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_2_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_2_baitap.html',
+    title: 'Giá trị lớn nhất và nhỏ nhất của hàm số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-3': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_3_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_3_baitap.html',
+    title: 'Đường tiệm cận của đồ thị hàm số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-4': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_4_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_4_baitap.html',
+    title: 'Khảo sát sự biến thiên và vẽ đồ thị hàm số',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-5': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_5_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_5_baitap.html',
+    title: 'Ứng dụng đạo hàm giải quyết bài toán thực tế',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c1': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong1_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương I (Toán 12)',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-6': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_6_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_6_baitap.html',
+    title: 'Vectơ trong không gian',
     author: 'Thầy Bùi Quý'
   },
   'toan12-bai-7': {
-    theoryUrl: 'https://buiquy77.github.io/toan12-slides/ly_thuyet_presentation.html',
-    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/bai_tap_presentation.html',
-    title: 'Hệ Trục Tọa Độ Trong Không Gian',
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_7_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_7_baitap.html',
+    title: 'Hệ trục tọa độ trong không gian',
     author: 'Thầy Bùi Quý'
   },
   'toan12-bai-8': {
-    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai07_ToaDoKhongGian_Phan2_Slide.html',
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_8_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_8_baitap.html',
+    title: 'Biểu thức tọa độ của các phép toán vectơ',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c2': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong2_Slide.html',
     exerciseUrl: null,
-    title: 'Biểu Thức Tọa Độ Của Các Phép Toán Vectơ',
+    title: 'Bài tập cuối chương II (Toán 12)',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-9': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_9_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_9_baitap.html',
+    title: 'Khoảng biến thiên và khoảng tứ phân vị',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-10': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_10_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_10_baitap.html',
+    title: 'Phương sai và độ lệch chuẩn',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c3': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong3_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương III (Toán 12)',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-11': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_11_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_11_baitap.html',
+    title: 'Nguyên hàm',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-12': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_12_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_12_baitap.html',
+    title: 'Tích phân',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-13': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_13_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_13_baitap.html',
+    title: 'Ứng dụng hình học của tích phân',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c4': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong4_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương IV (Toán 12)',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-14': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_14_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_14_baitap.html',
+    title: 'Phương trình mặt phẳng',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-15': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_15_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_15_baitap.html',
+    title: 'Phương trình đường thẳng trong không gian',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-16': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_16_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_16_baitap.html',
+    title: 'Công thức tính góc trong không gian',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-17': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_17_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_17_baitap.html',
+    title: 'Phương trình mặt cầu',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c5': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong5_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương V (Toán 12)',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-18': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_18_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_18_baitap.html',
+    title: 'Xác suất có điều kiện',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-bai-19': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/Bai_19_lythuyet.html',
+    exerciseUrl: 'https://buiquy77.github.io/toan12-slides/Bai_19_baitap.html',
+    title: 'Công thức xác suất toàn phần & Bayes',
+    author: 'Thầy Bùi Quý'
+  },
+  'toan12-ontap-c6': {
+    theoryUrl: 'https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong6_Slide.html',
+    exerciseUrl: null,
+    title: 'Bài tập cuối chương VI (Toán 12)',
     author: 'Thầy Bùi Quý'
   }
 };
 
+/**
+ * Lấy slide bài học với cơ chế đa tầng:
+ * 1. Đọc từ bộ nhớ tùy biến localStorage (nếu Admin có chỉnh sửa riêng trên máy)
+ * 2. Đọc từ danh mục DEFAULT_LESSON_SLIDES tĩnh trong code
+ * 3. Tự động suy luận thông minh (Smart Dynamic Fallback) tới kho buiquy77.github.io
+ */
 export function getLessonSlide(lessonId, lessonObj) {
+  // 1. Kiểm tra localStorage (nếu có tùy biến của người dùng)
   try {
     const savedSlides = localStorage.getItem('mathverse_custom_slides_v1');
     if (savedSlides) {
@@ -598,8 +776,64 @@ export function getLessonSlide(lessonId, lessonObj) {
     console.error('Lỗi đọc custom slide từ localStorage:', e);
   }
 
+  // 2. Kiểm tra danh mục định nghĩa sẵn trong code
   if (DEFAULT_LESSON_SLIDES[lessonId]) {
     return DEFAULT_LESSON_SLIDES[lessonId];
+  }
+
+  // 3. Tự động suy luận thông minh theo cấu trúc repo GitHub buiquy77.github.io
+  if (lessonId) {
+    const baiMatch = lessonId.match(/^toan(10|11|12)-bai-(\d+)$/i);
+    if (baiMatch) {
+      const grade = baiMatch[1];
+      const lessonNum = parseInt(baiMatch[2], 10);
+      const numPadded = lessonNum < 10 ? `0${lessonNum}` : `${lessonNum}`;
+
+      if (grade === '12') {
+        return {
+          theoryUrl: `https://buiquy77.github.io/toan12-slides/Bai_${lessonNum}_lythuyet.html`,
+          exerciseUrl: `https://buiquy77.github.io/toan12-slides/Bai_${lessonNum}_baitap.html`,
+          title: lessonObj?.title || `Bài ${lessonNum} (Toán 12)`,
+          author: 'Thầy Bùi Quý'
+        };
+      } else if (grade === '11') {
+        return {
+          theoryUrl: `https://buiquy77.github.io/toan11-slides/Bai_${lessonNum}_lythuyet.html`,
+          exerciseUrl: `https://buiquy77.github.io/toan11-slides/Bai_${lessonNum}_baitap.html`,
+          title: lessonObj?.title || `Bài ${lessonNum} (Toán 11)`,
+          author: 'Thầy Bùi Quý'
+        };
+      } else if (grade === '10') {
+        return {
+          theoryUrl: `https://buiquy77.github.io/toan10-slides/Bai${numPadded}_MenhDe_Slide.html`,
+          exerciseUrl: `https://buiquy77.github.io/toan10-slides/Bai${numPadded}_BaiTap_Slide.html`,
+          title: lessonObj?.title || `Bài ${lessonNum} (Toán 10)`,
+          author: 'Thầy Bùi Quý'
+        };
+      }
+    }
+
+    // Ôn tập cuối chương
+    const ontapMatch = lessonId.match(/^toan(10|11|12)-ontap-c(\d+)$/i);
+    if (ontapMatch) {
+      const grade = ontapMatch[1];
+      const cNum = ontapMatch[2];
+      if (grade === '12') {
+        return {
+          theoryUrl: `https://buiquy77.github.io/toan12-slides/BaiTapCuoiChuong${cNum}_Slide.html`,
+          exerciseUrl: null,
+          title: lessonObj?.title || `Ôn tập cuối chương ${cNum} (Toán 12)`,
+          author: 'Thầy Bùi Quý'
+        };
+      } else if (grade === '11') {
+        return {
+          theoryUrl: `https://buiquy77.github.io/toan11-slides/BaiTapCuoiChuong${cNum}_Slide.html`,
+          exerciseUrl: null,
+          title: lessonObj?.title || `Ôn tập cuối chương ${cNum} (Toán 11)`,
+          author: 'Thầy Bùi Quý'
+        };
+      }
+    }
   }
 
   return {

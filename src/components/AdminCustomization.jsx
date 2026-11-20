@@ -532,7 +532,7 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
                         ? 'bg-blue-400 animate-spin'
                         : syncStatus.state === 'error'
                         ? 'bg-rose-400'
-                        : 'bg-amber-400'
+                        : 'bg-emerald-400'
                     }`}
                   />
                   <span className="font-extrabold text-xs text-white">
@@ -542,7 +542,7 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
                       ? 'Đang Đồng Bộ Dữ Liệu...'
                       : syncStatus.state === 'error'
                       ? 'Lỗi Kết Nối Máy Chủ'
-                      : 'Chế Độ Ngoại Tuyến (Offline)'}
+                      : 'Dữ Liệu Sẵn Sàng (File tĩnh trong web)'}
                   </span>
                 </div>
                 {syncStatus.lastSyncTime && (
@@ -1111,10 +1111,10 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
           <div className="border-b border-slate-100 pb-3">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Download className="w-5 h-5 text-teal-700" />
-              <span>Sao Lưu Toàn Bộ &amp; Chuyển Giao Bản Quyền</span>
+              <span>Sao Lưu Toàn Bộ Dữ Liệu Web &amp; Chuyển Giao Bản Quyền</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Xuất hoặc nạp toàn bộ cấu hình hệ thống, danh sách đề tự tạo và hồ sơ giáo viên ra file JSON
+              Xuất hoặc nạp toàn bộ cấu hình hệ thống, toàn bộ slide HTML đã tùy biến, tài khoản học sinh, bài tập và hồ sơ giáo viên ra file JSON
             </p>
           </div>
 
@@ -1126,19 +1126,19 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
                   <Download className="w-5 h-5" />
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm">
-                  1. Xuất File Sao Lưu Cấu Hình (.json)
+                  1. Xuất Toàn Bộ Dữ Liệu Hệ Thống (.json)
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tải về một file sao lưu an toàn chứa toàn bộ thiết lập tên trường, môn học, hồ sơ giáo viên và các đề thi mới đã tạo.
+                  Tải về một file sao lưu an toàn chứa 100% dữ liệu: Link slide HTML các bài học, danh sách tài khoản học sinh, điểm số, bài tập, đề thi và hồ sơ giáo viên.
                 </p>
               </div>
 
               <button
-                onClick={handleBackupExport}
+                onClick={handleExportFull}
                 className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Download className="w-4 h-4 text-teal-400" />
-                <span>Tải File Sao Lưu (.json)</span>
+                <span>Tải File Toàn Bộ Dữ Liệu (.json)</span>
               </button>
             </div>
 
@@ -1149,10 +1149,10 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
                   <Upload className="w-5 h-5" />
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm">
-                  2. Khôi Phục Cấu Hình Từ File (.json)
+                  2. Khôi Phục Toàn Bộ Hệ Thống Từ File (.json)
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Chọn một file sao lưu từ máy tính để khôi phục nhanh cấu hình khi chuyển sang thiết bị mới hoặc cài đặt cho giáo viên khác.
+                  Chọn file sao lưu từ máy tính để khôi phục lập tức mọi thiết đặt, link slide và danh sách học sinh trên bất kỳ máy tính mới nào.
                 </p>
               </div>
 
@@ -1160,16 +1160,16 @@ export default function AdminCustomization({ initialTab = 'branding', openAddExa
                 <input
                   type="file"
                   accept=".json"
-                  ref={fileInputRef}
-                  onChange={handleBackupImport}
+                  ref={fullBackupFileRef}
+                  onChange={handleImportFull}
                   className="hidden"
                 />
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => fullBackupFileRef.current?.click()}
                   className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Upload className="w-4 h-4" />
-                  <span>Chọn File JSON Để Nạp</span>
+                  <span>Chọn File JSON Để Nạp Vào Máy Này</span>
                 </button>
               </div>
             </div>
