@@ -60,7 +60,8 @@ import {
   Copy,
   Link,
   Wifi,
-  RefreshCw
+  RefreshCw,
+  Activity
 } from 'lucide-react';
 
 export default function AdminCustomization({ initialTab = 'branding', openAddExamImmediately = false }) {
