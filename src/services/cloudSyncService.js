@@ -28,9 +28,8 @@ export const SYNC_STORAGE_KEYS = {
 export const DEFAULT_CLOUD_CONFIG = {
   enabled: true,
   provider: 'firebase', // 'firebase' | 'custom_rest'
-  // Mặc định để trống để web chạy mượt 100% bằng dữ liệu tĩnh đã tích hợp sẵn trong mã nguồn.
-  // Khi thầy cô muốn đồng bộ trực tiếp giữa nhiều máy, chỉ cần dán URL Firebase của thầy cô vào đây.
-  endpointUrl: '',
+  // Cơ sở dữ liệu đám mây Google Firebase chính thức của Thầy Bùi Quý
+  endpointUrl: 'https://toan-buiquy-default-rtdb.firebaseio.com',
   databaseNode: 'mathmate_central_db',
   autoSyncOnLoad: true,
   autoSyncOnChange: true,
@@ -39,10 +38,10 @@ export const DEFAULT_CLOUD_CONFIG = {
 
 // Trạng thái đồng bộ trong bộ nhớ (In-memory state)
 let syncStatus = {
-  state: 'local', // 'local' | 'idle' | 'syncing' | 'synced' | 'error' | 'offline'
+  state: 'idle', // 'idle' | 'local' | 'syncing' | 'synced' | 'error' | 'offline'
   lastSyncTime: null,
   lastError: null,
-  message: 'Chế độ dữ liệu gốc (100% Slide & Cài đặt tích hợp sẵn trong mã nguồn web)'
+  message: 'Đang kết nối cơ sở dữ liệu đám mây...'
 };
 
 const listeners = new Set();
@@ -74,9 +73,9 @@ export function getCloudSyncConfig() {
       return DEFAULT_CLOUD_CONFIG;
     }
     const parsed = JSON.parse(raw);
-    // Nếu trong bộ nhớ từng lưu URL thử nghiệm cũ không tồn tại, tự động dọn sạch
-    if (parsed.endpointUrl && parsed.endpointUrl.includes('buiquy-test-default-rtdb')) {
-      parsed.endpointUrl = '';
+    // Nếu trong bộ nhớ từng lưu URL thử nghiệm cũ không tồn tại hoặc bị rỗng, tự động cập nhật sang URL Firebase chính thức của Thầy
+    if (!parsed.endpointUrl || parsed.endpointUrl.includes('buiquy-test-default-rtdb')) {
+      parsed.endpointUrl = DEFAULT_CLOUD_CONFIG.endpointUrl;
     }
     return { ...DEFAULT_CLOUD_CONFIG, ...parsed };
   } catch (e) {
@@ -86,6 +85,12 @@ export function getCloudSyncConfig() {
 
 export function saveCloudSyncConfig(newConfig) {
   try {
+    if (newConfig && newConfig.endpointUrl) {
+      newConfig.endpointUrl = newConfig.endpointUrl
+        .trim()
+        .replace(/:\s*null\/?$/i, '')
+        .replace(/\/+$/, '');
+    }
     const merged = { ...getCloudSyncConfig(), ...newConfig };
     localStorage.setItem(SYNC_STORAGE_KEYS.SYNC_CONFIG, JSON.stringify(merged));
     updateStatus({ message: 'Đã lưu cấu hình kết nối đám mây.' });
@@ -173,10 +178,16 @@ export function applyRemoteData(remoteData, source = 'cloud') {
 function buildEndpointUrl(config, isHealthCheck = false) {
   let base = (config.endpointUrl || '').trim();
   if (!base) return null;
+  // Bỏ :null nếu người dùng vô tình copy từ Firebase Console
+  base = base.replace(/:\s*null\/?$/i, '');
   // Bỏ dấu gạch chéo cuối
   base = base.replace(/\/+$/, '');
 
-  if (config.provider === 'firebase' || base.includes('firebaseio.com')) {
+  if (
+    config.provider === 'firebase' ||
+    base.includes('firebaseio.com') ||
+    base.includes('firebasedatabase.app')
+  ) {
     // Đảm bảo có giao thức https://
     if (!base.startsWith('http://') && !base.startsWith('https://')) {
       base = `https://${base}`;
